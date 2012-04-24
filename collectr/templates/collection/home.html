@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+{% for collection in collections %}
+
+    {{ collection }}
+
+    {% for item in collection.item_sel.all %}
+
+        {{ item }}
+
+    {% endfor %}
+
+{% endfor %}
+
+{% endblock %}
