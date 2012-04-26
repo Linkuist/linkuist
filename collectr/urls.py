@@ -18,5 +18,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^collection/', include('collector.urls', namespace='collector')),
     url(r'', include('social_auth.urls')),
-
+    url(r'^celery/', include('djcelery.urls')),
 )

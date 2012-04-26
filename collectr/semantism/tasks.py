@@ -59,15 +59,21 @@ class TwitterStatus(Task):
         self.lang_classifier = textcat.TextCat("/home/benoit/projs/collectr/collectr/fpdb.conf", "/usr/share/libtextcat/LM")
 
     def is_valid(self, status):
+        if isinstance(status, unicode):
+            if 'http://' or 'https://' in status:
+                return [status]
         if not hasattr(status, "text"):
             return False
         if "http://" not in status.text:
             return False
         if not 'urls' in status.entities:
             return False
-        return True
+        urls = [d['url'] for d in status.entities['urls']]
+        return urls
 
     def find_collection(self, url):
+        print type(url)
+        print "find_collection in %s" % url
         for key, value in filtered_urls.items():
             if key in url:
                 return value[1]
@@ -79,19 +85,23 @@ class TwitterStatus(Task):
         return lang[0].split("--")[0]
 
     def run(self, status, user_id, post_date, author, *args, **kwargs):
+        user_id = int(user_id)
         logger = self.get_logger(**kwargs)
         logger.info("received status %d" %  user_id)
-        if not self.is_valid(status):
+        urls = self.is_valid(status)
+        if not urls:
             logger.info("status invalid and ignored")
             return
-        for urls in status.entities['urls']:
-            url = urls['url']
+        for url in urls:
+            print "url to blah : ", url
             if not url:
                 continue
             try:
                 lsum = LinkSum.objects.get(link=url, user__id=user_id)
                 lsum.recommanded += 1
                 lsum.save()
+                logger.info("url already in database")
+                continue
             except LinkSum.DoesNotExist:
                 pass
             try:
@@ -105,7 +115,7 @@ class TwitterStatus(Task):
             logger.info("extracted url : %s" % url)
             logger.info("extracted title : %s" % title)
 
-
+            print "url : ", url
             summary = self.find_summary(article, logger, url)
             collection_id = None
             collection_id = self.find_collection(url)
@@ -138,6 +148,8 @@ class TwitterStatus(Task):
             print traceback.print_exc()
             logger.error("no paragraph found in %s" % (url,))
             pouet = None
+        if pouet:
+            pouet = pouet.strip()
         return pouet
 
 tasks.register(TwitterStatus)
@@ -150,6 +162,8 @@ def extract_url_content(url, callback=None):
         user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
         headers['User-Agent'] = user_agent
     content = requests.get(url, headers=headers)
+    print 'content-type:', content.headers.get('content-type')
+    print content.headers
     if content.status_code < 400:
         html = content.text
         doc = Document(html)
@@ -157,8 +171,9 @@ def extract_url_content(url, callback=None):
         title = doc.short_title()
         url = content.url
         return title, article, url
-    # hohai should raise an exception
-    return None, None, None
+    else:
+        print content
+    raise Exception("Can't extract content for %s" % url_parse.geturl())
 
 @task
 def tokenise(raw_text, callback=None):
