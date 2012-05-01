@@ -20,6 +20,7 @@
         <div class="span4">
           <h2>{{ link.title }}</h2>
           <span class="label label-success">{{ link.author }}</span>
+          <p> on {{ link.inserted_at }} </p>
           <p> {% for tag in link.get_tags %}
             <span class="label label-info">{{ tag }}</span>
            {% endfor %} </p>
