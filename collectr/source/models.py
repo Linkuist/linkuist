@@ -41,3 +41,7 @@ class LinkSum(models.Model):
     link_title.short_description = "Title"
     link_title.allow_tags = True
 
+    def get_tags(self):
+        if self.tags:
+            return self.tags.split(',')
+        return []

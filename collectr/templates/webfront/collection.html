@@ -20,7 +20,9 @@
         <div class="span4">
           <h2>{{ link.title }}</h2>
           <span class="label label-success">{{ link.author }}</span>
-          <p> {{ link.tags }} </p>
+          <p> {% for tag in link.get_tags %}
+            <span class="label label-info">{{ tag }}</span>
+           {% endfor %} </p>
           {% if not link.summary == "None" %}
           <p>{{ link.summary }}</p>
           {% endif %}
