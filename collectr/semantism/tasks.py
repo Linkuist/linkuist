@@ -162,6 +162,9 @@ def extract_url_content(url, callback=None):
         user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
         headers['User-Agent'] = user_agent
     content = requests.get(url, headers=headers)
+    content_type = content.headers.get('content-type')
+    if not "html" in content_type:
+        raise Exception("unsupported content_type %s" % content_type)
     print 'content-type:', content.headers.get('content-type')
     print content.headers
     if content.status_code < 400:
