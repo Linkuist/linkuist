@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %} - Your links{% endblock title %}
+
+{% block sidebar %}
+<ul class="nav nav-list">
+  <li class="nav-header">{% trans 'Collections' %}</li>
+  {% for col in collections %}
+  <li><a href="#">{{ col.name }}</a></li>
+  {% endfor %}
+</ul>
+
+{% endblock sidebar %}
+
+{% block middle-container %}
+
+      <div class="row-fluid">
+{% for link in links %}
+        <div class="span4">
+          <h2>{{ link.title }}</h2>
+          <span class="label label-success">{{ link.author }}</span>
+          <p> {{ link.tags }} </p>
+          {% if not link.summary == "None" %}
+          <p>{{ link.summary }}</p>
+          {% endif %}
+          <p><a class="btn" href="{{ link.link }}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
+        </div><!--/span-->
+    {% if forloop.counter|divisibleby:"3" %}
+    </div><!--/row-->
+    <div class="row-fluid">
+    {% endif %}
+{% endfor %}
+
+{% endblock middle-container %}

@@ -132,6 +132,7 @@ INSTALLED_APPS = (
     'collector',
     'source',
     'semantism',
+    'webfront',
 )
 
 TWITTER_CONSUMER_KEY = 'EsceUi91emhQAtiWQBg'
@@ -154,8 +155,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
    'social_auth.context_processors.social_auth_by_type_backends',
 )
 
-LOGIN_URL          = '/admin/'
-LOGIN_REDIRECT_URL = '/admin/source/linksum/'
+LOGIN_URL          = '/login/'
+LOGIN_REDIRECT_URL = '/collection/'
 
 
 # A sample logging configuration. The only tangible logging

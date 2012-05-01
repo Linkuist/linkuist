@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %} - Home{% endblock title %}
+
+{% block container-fluid %}
+<ul>
+  <li>
+    <a href="{% url socialauth_begin 'twitter' %}">Enter using Twitter</a>
+  </li>
+</ul>
+
+<form action="" method="post" class="form-horizontal">{% csrf_token %}
+    {{ form }}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+</form>
+
+
+{% endblock container-fluid %}
+
+
