@@ -7,7 +7,7 @@
 <ul class="nav nav-list">
   <li class="nav-header">{% trans 'Collections' %}</li>
   {% for col in collections %}
-  <li><a href="#">{{ col.name }}</a></li>
+  <li><a href="{% url webfront:collection col.name %}">{{ col.name }}</a></li>
   {% endfor %}
 </ul>
 

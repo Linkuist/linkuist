@@ -7,7 +7,13 @@
 from django.contrib import admin
 
 # local
-from source.models import Source, LinkSum
+from source.models import Source, LinkSum, Collection, Filter
+
+class FilterAdmin(admin.ModelAdmin):
+    pass
+
+class CollectionAdmin(admin.ModelAdmin):
+    pass
 
 class LinkSumAdmin(admin.ModelAdmin):
     list_display = ('pk', 'author', 'tags', 'link_title', 'reco', 'summary')
@@ -20,5 +26,7 @@ class LinkSumAdmin(admin.ModelAdmin):
 class SourceAdmin(admin.ModelAdmin):
     pass
 
+admin.site.register(Filter, FilterAdmin)
 admin.site.register(LinkSum, LinkSumAdmin)
 admin.site.register(Source, SourceAdmin)
+admin.site.register(Collection, CollectionAdmin)

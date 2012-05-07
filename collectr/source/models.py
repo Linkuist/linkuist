@@ -7,7 +7,37 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # app
-from collector.models import Collection
+
+FILTERFIELDCHOICES = (
+    ('tags', 'tags'),
+    ('link', 'link'),
+    ('summary', 'summary'),
+    ('title', 'title'),
+    ('content', 'content'),
+    ('origin', 'origin'),
+    ('source', 'source'),
+    ('author', 'author'),
+)
+
+class Collection(models.Model):
+    user = models.ForeignKey(User)
+    name = models.CharField(max_length=128)
+
+
+    def __unicode__(self):
+        return "%s (%d)" % (self.name, self.user_id)
+
+class Filter(models.Model):
+    user = models.ForeignKey(User)
+    regexp = models.CharField(max_length=64)
+    field = models.CharField(choices=FILTERFIELDCHOICES, max_length=32)
+    to_delete = models.BooleanField(default=False)
+    to_collection = models.ForeignKey(Collection, null=True, blank=True)
+
+    def __unicode__(self):
+        if self.to_delete:
+            return u"delete match %s (%d)" % (self.regexp, self.user_id)
+        return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id)
 
 class Source(models.Model):
     name = models.CharField(max_length=32)

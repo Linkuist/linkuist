@@ -5,6 +5,7 @@
 """
 # python
 import pprint
+import re
 import string
 import sys
 import time
@@ -33,15 +34,17 @@ from celery.task.sets import subtask
 from celery.registry import tasks
 
 # collector
-from collector.models import Filter, Collection, CollectionFilter
-from source.models import Source, Origin, LinkSum
+#from collector.models import Filter, Collection, CollectionFilter
+from collector.exceptions import DeleteLinkException
+from source.models import Source, Origin, LinkSum, Filter, Collection
 
 filters = Filter.objects.filter(user__username="benoit")
-collection_filters = CollectionFilter.objects.values().all()
+default_collection = Collection.objects.get(user__username="benoit", name__iexact="all")
+#collection_filters = CollectionFilter.objects.values().all()
 
 filtered_urls = dict()
-for filtr in collection_filters:
-    filtered_urls[filtr['base_url']] = [filtr['user_id'], filtr['collection_id']]
+#for filtr in collection_filters:
+#    filtered_urls[filtr['base_url']] = [filtr['user_id'], filtr['collection_id']]
 
 
 """
@@ -71,13 +74,14 @@ class TwitterStatus(Task):
         urls = [d['url'] for d in status.entities['urls']]
         return urls
 
-    def find_collection(self, url):
-        print type(url)
-        print "find_collection in %s" % url
-        for key, value in filtered_urls.items():
-            if key in url:
-                return value[1]
-        return None
+    def find_collection(self, lsum):
+        for filtr in filters:
+            link_attr = getattr(lsum, filtr.field)
+            if re.match(filtr.regexp, link_attr):
+                if filtr.to_delete:
+                    raise DeleteLinkException("Deleting lonk")
+                lsum.collection_id = filtr.to_collection_id
+                break
 
     def find_language(self, raw_text):
         lang = self.lang_classifier.classify(raw_text)
@@ -117,20 +121,26 @@ class TwitterStatus(Task):
 
             print "url : ", url
             summary = self.find_summary(article, logger, url)
-            collection_id = None
-            collection_id = self.find_collection(url)
 
             lang = self.find_language(article)
             interesting_words = filter_interesting_words(article, lang)
             tag_string = ",".join(interesting_words)
             logger.info("tags : %s" % tag_string)
-            lsum = LinkSum.objects.create(
+            lsum = LinkSum(
                 tags=tag_string, summary=summary,
-                title=title, link=url, collection_id=collection_id,
+                title=title, link=url, collection_id=default_collection.pk,
                 read=False, recommanded=1,
                 user_id=user_id, author=author,
             )
-
+            try:
+                collection_id = self.find_collection(lsum)
+            except DeleteLinkException:
+                logger.info("Link not saved, filtered")
+                return
+            if collection_id:
+                lsum.collection = collection_id
+            lsum.save()
+    
     def find_summary(self, article, logger, url):
         pouet = ""
         try:
