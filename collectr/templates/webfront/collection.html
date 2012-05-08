@@ -22,7 +22,7 @@
           <span class="label label-success">{{ link.author }}</span>
           <p> on {{ link.inserted_at }} </p>
           <p> {% for tag in link.get_tags %}
-            <span class="label label-info">{{ tag }}</span>
+            <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
           {% if not link.summary == "None" %}
           <p>{{ link.summary }}</p>
