@@ -48,11 +48,37 @@ class Source(models.Model):
 class Origin(models.Model):
     name = models.CharField(max_length=128)
 
+class UrlViews(models.Model):
+    count = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Url View'
+        verbose_name_plural = 'Url Views'
+
+    def __unicode__(self):
+        return u"%d" % self.count
+
+class Tag(models.Model):
+    name = models.CharField(max_length=128, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+class Url(models.Model):
+    link = models.TextField()
+    views = models.ForeignKey(UrlViews)
+    tags = models.ManyToManyField(Tag)
+    raw_tags = models.TextField()
+
+    def __unicode__(self):
+        return self.link
+
 class LinkSum(models.Model):
     tags = models.TextField()
     summary = models.TextField(null=True)
     title = models.TextField()
     link = models.TextField()
+    url = models.ForeignKey(Url, null=True, blank=True)
     origin = models.ForeignKey(Origin, null=True)
     source = models.ForeignKey(Source, null=True)
     read = models.BooleanField(default=False)

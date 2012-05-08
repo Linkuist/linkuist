@@ -27,7 +27,7 @@
           {% if not link.summary == "None" %}
           <p>{{ link.summary }}</p>
           {% endif %}
-          <p><a class="btn" href="{{ link.link }}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
+          <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
     {% if forloop.counter|divisibleby:"3" %}
     </div><!--/row-->

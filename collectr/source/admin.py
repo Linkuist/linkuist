@@ -7,7 +7,17 @@
 from django.contrib import admin
 
 # local
-from source.models import Source, LinkSum, Collection, Filter
+from source.models import (Source, LinkSum, Collection,
+                           Filter, Tag, Url, UrlViews)
+
+class TagAdmin(admin.ModelAdmin):
+    pass
+
+class UrlAdmin(admin.ModelAdmin):
+    pass
+
+class UrlViewsAdmin(admin.ModelAdmin):
+    pass
 
 class FilterAdmin(admin.ModelAdmin):
     pass
@@ -30,3 +40,6 @@ admin.site.register(Filter, FilterAdmin)
 admin.site.register(LinkSum, LinkSumAdmin)
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Collection, CollectionAdmin)
+admin.site.register(Url, UrlAdmin)
+admin.site.register(Tag, TagAdmin)
+admin.site.register(UrlViews, UrlViewsAdmin)

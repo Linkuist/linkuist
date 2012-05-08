@@ -18,5 +18,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'', include('social_auth.urls')),
     url(r'', include('webfront.urls', namespace='webfront')),
+    url(r'', include('link_tracking.urls', namespace='link_tracking')),
     url(r'^celery/', include('djcelery.urls')),
 )

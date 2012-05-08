@@ -131,6 +131,7 @@ INSTALLED_APPS = (
 
     'collector',
     'source',
+    'link_tracking',
     'semantism',
     'webfront',
 )
