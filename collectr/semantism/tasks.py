@@ -36,7 +36,7 @@ from celery.registry import tasks
 # collector
 #from collector.models import Filter, Collection, CollectionFilter
 from collector.exceptions import DeleteLinkException
-from source.models import Source, Origin, LinkSum, Filter, Collection
+from source.models import Source, Origin, LinkSum, Filter, Collection, Url, UrlViews, Tag
 
 filters = Filter.objects.filter(user__username="benoit")
 default_collection = Collection.objects.get(user__username="benoit", name__iexact="all")
@@ -100,8 +100,15 @@ class TwitterStatus(Task):
             print "url to blah : ", url
             if not url:
                 continue
+
             try:
-                lsum = LinkSum.objects.get(link=url, user__id=user_id)
+                url_m = Url.objects.get(link=url)
+            except Url.DoesNotExist:
+                uv = UrlViews.objects.create(count=0)
+                url_m = Url.objects.create(link=url, views=uv)
+
+            try:
+                lsum = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
                 lsum.recommanded += 1
                 lsum.save()
                 logger.info("url already in database")
@@ -126,8 +133,16 @@ class TwitterStatus(Task):
             interesting_words = filter_interesting_words(article, lang)
             tag_string = ",".join(interesting_words)
             logger.info("tags : %s" % tag_string)
+
+            for tmp_tag in interesting_words:
+                tag_m = Tag.objects.get_or_create(name=tmp_tag)
+                url_m.tags.add(tag_m[0])
+            url_m.raw_tags = tag_string
+            url_m.save()
+            url_m
+
             lsum = LinkSum(
-                tags=tag_string, summary=summary,
+                tags=tag_string, summary=summary, url=url_m,
                 title=title, link=url, collection_id=default_collection.pk,
                 read=False, recommanded=1,
                 user_id=user_id, author=author,
