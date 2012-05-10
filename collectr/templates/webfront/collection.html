@@ -18,7 +18,8 @@
       <div class="row-fluid">
 {% for link in links %}
         <div class="span4">
-          <h2>{{ link.title }}</h2>
+            <h3>{{ link.title }}
+            </h3>
           <span class="label label-success">{{ link.author }}</span>
           <p> on {{ link.inserted_at }} </p>
           <p> {% for tag in link.get_tags %}
