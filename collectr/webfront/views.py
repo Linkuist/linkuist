@@ -2,14 +2,17 @@
 
 # django
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # collector
 from source.models import LinkSum, Collection
 
 
 def home(request, template="webfront/home.html"):
-    data = {}
+    data = {
+    }
+    if request.user.is_authenticated():
+        return redirect("webfront:collection")
     return render(request, template, data)
 
 def login_view(request, template="webfront/login.html"):
