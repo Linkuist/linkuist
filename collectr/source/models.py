@@ -23,7 +23,6 @@ class Collection(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=128)
 
-
     def __unicode__(self):
         return "%s (%d)" % (self.name, self.user_id)
 
@@ -33,6 +32,7 @@ class Filter(models.Model):
     field = models.CharField(choices=FILTERFIELDCHOICES, max_length=32)
     to_delete = models.BooleanField(default=False)
     to_collection = models.ForeignKey(Collection, null=True, blank=True)
+    xpath = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         if self.to_delete:
