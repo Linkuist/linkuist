@@ -21,13 +21,19 @@ def login_view(request, template="webfront/login.html"):
 
 @login_required
 def collection(request, collection=None, template="webfront/collection.html"):
-    if not collection:
+    show_read = True
+    if collection == "unread" or not collection:
+        show_unread = False
         collection = "all"
     collection = Collection.objects.get(name__iexact=collection, user__id=request.user.id)
     links = LinkSum.objects.filter(user__id=request.user.id)\
                            .filter(collection__id=collection.id)\
                            .order_by('-pk')[:100]
+    if not show_read:
+        links.filter(read=False)
+
     data = {
+        'unread_count' : links.count(),
         'links' : links,
         'collections' : Collection.objects.filter(user__id=request.user.id)
     }
@@ -40,6 +46,7 @@ def collection_tag(request, tag, template="webfront/collection.html"):
                            .filter(url__tags__name=tag)\
                            .order_by('-pk')[:100]
     data = {
+        'unread_count' : links.count(),
         'links' : links,
         'collections' : Collection.objects.filter(user__id=request.user.id)
     }
