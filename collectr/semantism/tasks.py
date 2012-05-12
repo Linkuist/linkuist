@@ -35,7 +35,7 @@ from celery.registry import tasks
 
 # collector
 #from collector.models import Filter, Collection, CollectionFilter
-from collector.exceptions import DeleteLinkException
+from collector.exceptions import DeleteLinkException, UnsupportedContentException
 from source.models import Source, Origin, LinkSum, Filter, Collection, Url, UrlViews, Tag
 
 filters = Filter.objects.filter(user__username="benoit")

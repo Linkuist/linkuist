@@ -9,3 +9,5 @@ class BaseCollectorException(Exception):
 class DeleteLinkException(BaseCollectorException):
     pass
 
+class UnsupportedContentException(BaseCollectorException):
+    pass
