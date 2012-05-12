@@ -12,8 +12,10 @@ import time
 import traceback
 
 from cStringIO import StringIO
-from lxml import etree
 from urlparse import urlparse
+from lxml import etree
+import lxml.html as LH
+
 
 # 3rd nltk
 import nltk
@@ -39,7 +41,6 @@ from collector.exceptions import DeleteLinkException, UnsupportedContentExceptio
 from source.models import Source, Origin, LinkSum, Filter, Collection, Url, UrlViews, Tag
 
 filters = Filter.objects.filter(user__username="benoit")
-default_collection = Collection.objects.get(user__username="benoit", name__iexact="all")
 #collection_filters = CollectionFilter.objects.values().all()
 
 filtered_urls = dict()
@@ -54,6 +55,13 @@ http://stackoverflow.com/questions/4363899/making-moves-w-websockets-and-python-
 http://code.google.com/p/nltk/source/browse/trunk/nltk_contrib/nltk_contrib/misc/langid.py
 
 """
+
+class ParsedUrl(object):
+    def __init__(self):
+        url = None
+        summary = None
+        html = None
+
 class TwitterStatus(Task):
 
     def __init__(self, *args, **kwargs):
@@ -61,7 +69,21 @@ class TwitterStatus(Task):
         super(Task, self).__init__(*args, **kwargs)
         self.lang_classifier = textcat.TextCat("/home/benoit/projs/collectr/collectr/fpdb.conf", "/usr/share/libtextcat/LM")
 
-    def is_valid(self, status):
+    def clean_url(self, url):
+        import cgi
+        import urlparse
+        import urllib
+
+        u = urlparse.urlparse(url)
+        qs = cgi.parse_qs(u[4])
+        for key in qs:
+            if key.startswith('utm_'):
+                del qs[key]
+        u = u._replace(query=urllib.urlencode(qs, True))
+        url = urlparse.urlunparse(u)
+        return url
+
+    def is_valid_url(self, status):
         if isinstance(status, unicode):
             if 'http://' or 'https://' in status:
                 return [status]
@@ -81,26 +103,38 @@ class TwitterStatus(Task):
                 if filtr.to_delete:
                     raise DeleteLinkException("Deleting lonk")
                 lsum.collection_id = filtr.to_collection_id
-                break
+                return filtr
+
+        return None
 
     def find_language(self, raw_text):
         lang = self.lang_classifier.classify(raw_text)
-        print lang
         return lang[0].split("--")[0]
 
     def run(self, status, user_id, post_date, author, *args, **kwargs):
-        user_id = int(user_id)
         logger = self.get_logger(**kwargs)
-        logger.info("received status %d" %  user_id)
-        urls = self.is_valid(status)
+        user_id = int(user_id)
+        default_collection = Collection.objects.get(user__pk=user_id, name__iexact="all")
+        urls = self.is_valid_url(status)
         if not urls:
             logger.info("status invalid and ignored")
             return
+        logger.info("received status for user %d" %  user_id)
         for url in urls:
-            print "url to blah : ", url
+            url = self.clean_url(url)
             if not url:
                 continue
 
+            try:
+                parsed_url = extract_url_content(url)
+                url = parsed_url.url
+                title = parsed_url.title
+
+            except Exception, exc:
+                import traceback
+                print traceback.print_exc()
+                logger.error("Can't extract title from %s (%s)" % (url, exc))
+                return
             try:
                 url_m = Url.objects.get(link=url)
             except Url.DoesNotExist:
@@ -115,28 +149,21 @@ class TwitterStatus(Task):
                 continue
             except LinkSum.DoesNotExist:
                 pass
-            try:
-                title, article, url = extract_url_content(url)
-            except Exception, exc:
-                import traceback
-                print traceback.print_exc()
-                logger.error("Can't extract title from %s (%s)" % (url, exc))
-                return
 
             logger.info("extracted url : %s" % url)
-            logger.info("extracted title : %s" % title)
+            logger.info("extracted title : %s" % parsed_url.title)
 
-            print "url : ", url
-            summary = self.find_summary(article, logger, url)
+            summary = self.find_summary(parsed_url.summary, logger, url)
 
-            lang = self.find_language(article)
-            interesting_words = filter_interesting_words(article, lang)
+            lang = self.find_language(parsed_url.summary)
+            interesting_words = filter_interesting_words(parsed_url.summary, lang)
             tag_string = ",".join(interesting_words)
             logger.info("tags : %s" % tag_string)
 
             for tmp_tag in interesting_words:
                 tag_m = Tag.objects.get_or_create(name=tmp_tag)
                 url_m.tags.add(tag_m[0])
+
             url_m.raw_tags = tag_string
             url_m.save()
             url_m
@@ -148,59 +175,82 @@ class TwitterStatus(Task):
                 user_id=user_id, author=author,
             )
             try:
-                collection_id = self.find_collection(lsum)
+                if "instagr.am" in url:
+                    print "Filter match"
+                filtr = self.find_collection(lsum)
+                if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
+                    filtr.xpath = None
+                    filtr.save()
+                if filtr and filtr.xpath is not None:
+                    lsum.summary = self.extract_link_xpath(filtr.xpath, parsed_url.content)
+                    lsum.collection_id = filtr.to_collection_id
+
             except DeleteLinkException:
                 logger.info("Link not saved, filtered")
                 return
-            if collection_id:
-                lsum.collection = collection_id
             lsum.save()
-    
-    def find_summary(self, article, logger, url):
-        pouet = ""
+
+    def extract_link_xpath(self, xpath, article):
         try:
-            tree = etree.fromstring(article)
-            xpath_l = tree.xpath('//p[1]')[0].text
-            pouet = xpath_l[0]
-            try:
-                if len(pouet) < 50:
-                    pouet = tree.xpath('//p[1]')[0].text
-                    pouet += xpath_l[1]
-            except Exception, exc:
-                pass
-            logger.info("paragraph : %s" % pouet)
+            doc = LH.fromstring(article)
+            print doc
+            print article
+            print xpath
+            result = doc.xpath(xpath)
+            if isinstance(result, (list, tuple)):
+                print result
+                result = result[0]
+            print LH.tostring(result)
+            return LH.tostring(result)
+        except Exception, exc:
+            import traceback
+            print traceback.print_exc()
+            print "extract_link_xpath exc:", exc
+            return ""
+
+    def find_summary(self, article, logger, url):
+        summary = ""
+        try:
+            tree = LH.fromstring(article)
+            xpath_l = tree.xpath('//p/text()')
+            summary = " ".join(xpath_l)
+            summary = summary[:150]
         except Exception, exc:
             print traceback.print_exc()
             logger.error("no paragraph found in %s" % (url,))
-            pouet = None
-        if pouet:
-            pouet = pouet.strip()
-        return pouet
+            summary = ""
+        if summary:
+            summary = summary.strip()
+        return summary
 
 tasks.register(TwitterStatus)
 
 @task
 def extract_url_content(url, callback=None):
+    parsed_url = ParsedUrl()
     url_parse = urlparse(url)
     headers = {}
     if url_parse.netloc != "t.co":
         user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
         headers['User-Agent'] = user_agent
     content = requests.get(url, headers=headers)
-    content_type = content.headers.get('content-type')
-    if not "html" in content_type:
-        raise Exception("unsupported content_type %s" % content_type)
-    print 'content-type:', content.headers.get('content-type')
-    print content.headers
-    if content.status_code < 400:
+    parsed_url.content_type = content.headers.get('content-type')
+    parsed_url.status_code = content.status_code
+    parsed_url.content = content.text
+    parsed_url.url = content.url
+
+    if content.status_code >= 400:
+        raise Exception("Can't extract content for %s (http<%d>)" % (url, content.status_code))
+    if "image" in parsed_url.content_type:
+        parsed_url.summary = """<a href="%s>%s<a>""" % (url, url)
+        parsed_url.title = url
+        return parsed_url
+    if "html" in parsed_url.content_type:
         html = content.text
         doc = Document(html)
-        article = doc.summary()
-        title = doc.short_title()
-        url = content.url
-        return title, article, url
-    else:
-        print content
+        parsed_url.summary = doc.summary()
+        parsed_url.title = doc.short_title()
+        return parsed_url
     raise Exception("Can't extract content for %s" % url_parse.geturl())
 
 @task
