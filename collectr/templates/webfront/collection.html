@@ -19,6 +19,12 @@
 {% for link in links %}
         <div class="span4">
             <h3>{{ link.title }}
+          {% if link.read %}
+          <i class="icon-search"></i>
+          {% else %}
+          <i class="icon-envelope"></i>
+          {% endif %}
+            
             </h3>
           <span class="label label-success">{{ link.author }}</span>
           <p> on {{ link.inserted_at }} </p>
@@ -26,7 +32,7 @@
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
           {% if not link.summary == "None" %}
-          <p>{{ link.summary }}</p>
+          <p>{{ link.summary|safe }}</p>
           {% endif %}
           <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
