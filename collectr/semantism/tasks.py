@@ -176,8 +176,6 @@ class TwitterStatus(Task):
                 user_id=user_id, author=author,
             )
             try:
-                if "instagr.am" in url:
-                    print "Filter match"
                 filtr = self.find_collection(lsum)
                 if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
                     filtr.xpath = None
@@ -194,14 +192,9 @@ class TwitterStatus(Task):
     def extract_link_xpath(self, xpath, article):
         try:
             doc = LH.fromstring(article)
-            print doc
-            print article
-            print xpath
             result = doc.xpath(xpath)
             if isinstance(result, (list, tuple)):
-                print result
                 result = result[0]
-            print LH.tostring(result)
             return LH.tostring(result)
         except Exception, exc:
             import traceback
