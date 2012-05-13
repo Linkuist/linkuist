@@ -81,6 +81,7 @@ class TwitterStatus(Task):
                 del qs[key]
         u = u._replace(query=urllib.urlencode(qs, True))
         url = urlparse.urlunparse(u)
+        url = url.replace('#!', '?_escaped_fragment_=')
         return url
 
     def is_valid_url(self, status):
