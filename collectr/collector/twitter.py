@@ -26,7 +26,6 @@ setup_environ(settings)
 # 3rdparty
 import tweepy
 
-
 # django
 from django.contrib.auth.models import User
 from social_auth.models import UserSocialAuth
@@ -34,9 +33,6 @@ from social_auth.models import UserSocialAuth
 # semantism
 from semantism.tasks import TwitterStatus
 
-# collectr
-from collector.models import (Collection, CollectionItem, CollectionItemType,
-                              Author, Filter)
 
 CONSUMER_KEY = 'EsceUi91emhQAtiWQBg'
 CONSUMER_SECRET = 'wfFB4l79lfBGJ8dilex6x4Bf2I2imwDXPiNnFcIBdRE'
