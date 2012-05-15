@@ -43,7 +43,7 @@ class TwitterListener(tweepy.streaming.StreamListener):
     def on_status(self, status):
         if hasattr(status, 'entities') and 'urls' in status.entities:
             print "adding task called", datetime.now()
-            TwitterStatus.apply_async(args=(status, self.user.pk, datetime.now(), status.user.screen_name))
+            TwitterStatus.apply_async(args=(status, self.user.pk, datetime.now(), status.user.screen_name, "twitter"))
         else:
             print "ignored"
 

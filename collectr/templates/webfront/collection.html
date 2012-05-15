@@ -10,6 +10,12 @@
   <li><a href="{% url webfront:collection col.name %}">{{ col.name }}</a></li>
   {% endfor %}
 </ul>
+<ul class="nav nav-list">
+  <li class="nav-header">{% trans 'Sources' %}</li>
+  {% for source in sources %}
+  <li><a href="{% url webfront:collection_source source.slug %}">{{ source.name }}</a></li>
+  {% endfor %}
+</ul>
 
 {% endblock sidebar %}
 

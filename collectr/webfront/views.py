@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 
 # collector
-from source.models import LinkSum, Collection
+from source.models import LinkSum, Collection, Source
 
 
 def home(request, template="webfront/home.html"):
@@ -76,10 +76,26 @@ def collection(request, collection=None, template="webfront/collection.html"):
         'paginator' : paginator,
         'links' : links,
         'collections' : Collection.objects.filter(user__id=request.user.id),
+        'sources' : Source.objects.all(),
         'page_range' : page_range,
     }
 
     return render(request, template, data)
+
+@login_required
+def collection_source(request, source, template="webfront/collection.html"):
+    links = LinkSum.objects.filter(user__id=request.user.id)\
+                           .filter(source__slug=source)\
+                           .order_by('-pk')[:100]
+    data = {
+        'unread_count' : links.count(),
+        'links' : links,
+        'collections' : Collection.objects.filter(user__id=request.user.id),
+        'sources' : Source.objects.all(),
+    }
+
+    return render(request, template, data)
+
 
 @login_required
 def collection_tag(request, tag, template="webfront/collection.html"):
@@ -89,6 +105,7 @@ def collection_tag(request, tag, template="webfront/collection.html"):
     data = {
         'unread_count' : links.count(),
         'links' : links,
+        'sources' : Source.objects.all(),
         'collections' : Collection.objects.filter(user__id=request.user.id)
     }
 

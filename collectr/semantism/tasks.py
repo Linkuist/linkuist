@@ -112,9 +112,10 @@ class TwitterStatus(Task):
         lang = self.lang_classifier.classify(raw_text)
         return lang[0].split("--")[0]
 
-    def run(self, status, user_id, post_date, author, *args, **kwargs):
+    def run(self, status, user_id, post_date, author, source, *args, **kwargs):
         logger = self.get_logger(**kwargs)
         user_id = int(user_id)
+        source = Source.objects.get(name__iexact=source)
         default_collection = Collection.objects.get(user__pk=user_id, name__iexact="all")
         urls = self.is_valid_url(status)
         if not urls:
@@ -172,7 +173,7 @@ class TwitterStatus(Task):
             lsum = LinkSum(
                 tags=tag_string, summary=summary, url=url_m,
                 title=title, link=url, collection_id=default_collection.pk,
-                read=False, recommanded=1,
+                read=False, recommanded=1, source=source,
                 user_id=user_id, author=author,
             )
             try:

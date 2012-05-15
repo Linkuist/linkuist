@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     url(r'^login/$', login, {'template_name': 'webfront/login.html'}, name="login"),
     url(r'^collection/$', views.collection, name="collection"),
     url(r'^collection/(?P<collection>\w+)/$', views.collection, name="collection"),
+    url(r'^collection/source/(?P<source>\w+)/$', views.collection_source, name="collection_source"),
     url(r'^collection/tag/(?P<tag>.*)/$', views.collection_tag, name="collection_tag"),
 )
 

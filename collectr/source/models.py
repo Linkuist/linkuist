@@ -41,6 +41,7 @@ class Filter(models.Model):
 
 class Source(models.Model):
     name = models.CharField(max_length=32)
+    slug = models.CharField(max_length=32, unique=True)
 
     def __unicode__(self):
         return self.name
