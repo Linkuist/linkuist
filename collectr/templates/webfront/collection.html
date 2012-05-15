@@ -32,8 +32,10 @@
           {% endif %}
             
             </h3>
-          <span class="label label-success">{{ link.author }}</span>
-          <p> on {{ link.inserted_at }} </p>
+            <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
+                <span class="label label-success">{{ link.author.name }}</span>
+            </a>
+          <p> on {{ link.inserted_at }}</p>
           <p> {% for tag in link.get_tags %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>

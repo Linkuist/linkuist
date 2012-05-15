@@ -51,9 +51,10 @@ def collection(request, collection=None, template="webfront/collection.html"):
         show_unread = False
         collection = "all"
     collection = Collection.objects.get(name__iexact=collection, user__id=request.user.id)
-    qs = LinkSum.objects.filter(user__id=request.user.id)\
-                           .filter(collection__id=collection.id)\
-                           .order_by('-pk')
+    qs = LinkSum.objects.select_related('author')\
+                        .filter(user__id=request.user.id)\
+                        .filter(collection__id=collection.id)\
+                        .order_by('-pk')
     if not show_read:
         qs.filter(read=False)
 
@@ -84,7 +85,8 @@ def collection(request, collection=None, template="webfront/collection.html"):
 
 @login_required
 def collection_source(request, source, template="webfront/collection.html"):
-    links = LinkSum.objects.filter(user__id=request.user.id)\
+    links = LinkSum.objects.select_related('author')\
+                           .filter(user__id=request.user.id)\
                            .filter(source__slug=source)\
                            .order_by('-pk')[:100]
     data = {
@@ -99,7 +101,8 @@ def collection_source(request, source, template="webfront/collection.html"):
 
 @login_required
 def collection_tag(request, tag, template="webfront/collection.html"):
-    links = LinkSum.objects.filter(user__id=request.user.id)\
+    links = LinkSum.objects.select_related('author')\
+                           .filter(user__id=request.user.id)\
                            .filter(url__tags__name=tag)\
                            .order_by('-pk')[:100]
     data = {
@@ -110,3 +113,40 @@ def collection_tag(request, tag, template="webfront/collection.html"):
     }
 
     return render(request, template, data)
+
+@login_required
+def collection_user(request, user, source, template="webfront/collection.html"):
+    show_read = True
+    qs = LinkSum.objects.select_related('author')\
+                        .filter(user__id=request.user.id)\
+                        .filter(author__name=user)\
+                        .filter(author__source=source)\
+                        .order_by('-pk')
+    if not show_read:
+        qs.filter(read=False)
+
+    paginator = Paginator(qs, 42)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
+    try:
+        links = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        links = paginator.page(paginator.num_pages)
+
+    page_range = get_display_paginate_item(paginator, page)
+    paginator = links
+    links = links.object_list
+    data = {
+        'unread_count' : links.count(),
+        'paginator' : paginator,
+        'links' : links,
+        'collections' : Collection.objects.filter(user__id=request.user.id),
+        'sources' : Source.objects.all(),
+        'page_range' : page_range,
+    }
+
+    return render(request, template, data)
+

@@ -74,6 +74,10 @@ class Url(models.Model):
     def __unicode__(self):
         return self.link
 
+class Author(models.Model):
+    name = models.CharField(max_length=64)
+    source = models.ForeignKey(Source)
+
 class LinkSum(models.Model):
     tags = models.TextField()
     summary = models.TextField(null=True)
@@ -87,7 +91,8 @@ class LinkSum(models.Model):
     collection = models.ForeignKey(Collection, null=True)
     inserted_at = models.DateTimeField(default=datetime.now)
     user = models.ForeignKey(User)
-    author = models.CharField(max_length=64)
+    old_author = models.CharField(max_length=64, db_column="author")
+    author = models.ForeignKey(Author, null=True, blank=True)
 
     def reco(self):
         return """%d""" % self.recommanded
