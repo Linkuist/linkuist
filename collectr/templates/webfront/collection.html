@@ -42,4 +42,54 @@
     {% endif %}
 {% endfor %}
 
+<br />
+<br />
+
+
 {% endblock middle-container %}
+
+
+
+{% block pagination %}
+
+<div class="pagination">
+  <ul>
+    {% if paginator.has_previous %}
+    <li class="previous"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
+    {% else %}
+    <li class="previous disabled"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
+
+    {% endif %}
+    {% for page_num in page_range %}
+    {% if page_num == "..." %}
+    <li class="disabled"><a href="?page={{ page_num}}">{{ page_num }}</a>
+    {% else %}
+    <li><a href="?page={{ page_num}}">{{ page_num }}</a>
+    {% endif %}
+    {% endfor %}
+    {% if paginator.has_next %}
+    <li class="next"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
+    {% else %}
+    <li class="next disabled"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
+    {% endif %}
+   
+  </ul>
+</div>
+
+
+{% comment %}
+{{ page_range|pprint }}
+<div class="pager">
+  <ul class="pager">
+    {% if paginator.has_previous %}
+    <li class="previous"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
+    {% endif %}
+    <li class=".disabled"><a href="?page={{ paginator.number }}"> {{ paginator.number }} </a></li>
+
+    {% if paginator.has_next %}
+    <li class="next"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
+    {% endif %}
+  </ul>
+</div>
+{% endcomment %}
+{% endblock pagination %}
