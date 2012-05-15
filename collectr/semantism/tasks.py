@@ -38,7 +38,8 @@ from celery.registry import tasks
 # collector
 #from collector.models import Filter, Collection, CollectionFilter
 from collector.exceptions import DeleteLinkException, UnsupportedContentException
-from source.models import Source, Origin, LinkSum, Filter, Collection, Url, UrlViews, Tag
+from source.models import (Author, Source, Origin, LinkSum, Filter,
+                           Collection, Url, UrlViews, Tag)
 
 filters = Filter.objects.filter(user__username="benoit")
 #collection_filters = CollectionFilter.objects.values().all()
@@ -116,6 +117,7 @@ class TwitterStatus(Task):
         logger = self.get_logger(**kwargs)
         user_id = int(user_id)
         source = Source.objects.get(name__iexact=source)
+        author, created = Author.objects.get_or_create(name=author, source=source)
         default_collection = Collection.objects.get(user__pk=user_id, name__iexact="all")
         urls = self.is_valid_url(status)
         if not urls:
