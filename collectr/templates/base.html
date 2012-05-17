@@ -47,7 +47,7 @@
           <div class="btn-group pull-right">
             {% if not user.is_authenticated %}
             <ul class="nav">
-                <li class="active"><a href="#">{% trans 'login' %}</a></li>
+                <li class="active"><a href="{% url webfront:login %}">{% trans 'login' %}</a></li>
             </ul>
             {% else %}
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
