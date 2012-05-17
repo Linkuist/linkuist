@@ -35,18 +35,17 @@ from celery.task import task, Task
 from celery.task.sets import subtask
 from celery.registry import tasks
 
+# django
+from django.db.models import Q
+
 # collector
 #from collector.models import Filter, Collection, CollectionFilter
 from collector.exceptions import DeleteLinkException, UnsupportedContentException
 from source.models import (Author, Source, Origin, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
 
-filters = Filter.objects.filter(user__username="benoit")
 #collection_filters = CollectionFilter.objects.values().all()
 
-filtered_urls = dict()
-#for filtr in collection_filters:
-#    filtered_urls[filtr['base_url']] = [filtr['user_id'], filtr['collection_id']]
 
 
 """
@@ -99,7 +98,7 @@ class TwitterStatus(Task):
         return urls
 
     def find_collection(self, lsum):
-        for filtr in filters:
+        for filtr in self.filters:
             link_attr = getattr(lsum, filtr.field)
             if re.match(filtr.regexp, link_attr):
                 if filtr.to_delete:
@@ -116,9 +115,10 @@ class TwitterStatus(Task):
     def run(self, status, user_id, post_date, author, source, *args, **kwargs):
         logger = self.get_logger(**kwargs)
         user_id = int(user_id)
+        self.filters = Filter.objects.filter(Q(user__pk=user_id) | Q(user__isnull=True))
         source = Source.objects.get(name__iexact=source)
         author, created = Author.objects.get_or_create(name=author, source=source)
-        default_collection = Collection.objects.get(user__pk=user_id, name__iexact="all")
+        default_collection = Collection.objects.get(name__iexact="all")
         urls = self.is_valid_url(status)
         if not urls:
             logger.info("status invalid and ignored")

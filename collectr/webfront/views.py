@@ -3,6 +3,7 @@
 # django
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import render, redirect
 
 # collector
@@ -50,7 +51,9 @@ def collection(request, collection=None, template="webfront/collection.html"):
     if collection == "unread" or not collection:
         show_unread = False
         collection = "all"
-    collection = Collection.objects.get(name__iexact=collection, user__id=request.user.id)
+    collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
+                                   .get(name__iexact=collection)
+
     qs = LinkSum.objects.select_related('author')\
                         .filter(user__id=request.user.id)\
                         .filter(collection__id=collection.id)\
@@ -76,7 +79,7 @@ def collection(request, collection=None, template="webfront/collection.html"):
         'unread_count' : links.count(),
         'paginator' : paginator,
         'links' : links,
-        'collections' : Collection.objects.filter(user__id=request.user.id),
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
         'sources' : Source.objects.all(),
         'page_range' : page_range,
     }
@@ -92,7 +95,7 @@ def collection_source(request, source, template="webfront/collection.html"):
     data = {
         'unread_count' : links.count(),
         'links' : links,
-        'collections' : Collection.objects.filter(user__id=request.user.id),
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
         'sources' : Source.objects.all(),
     }
 
@@ -109,7 +112,7 @@ def collection_tag(request, tag, template="webfront/collection.html"):
         'unread_count' : links.count(),
         'links' : links,
         'sources' : Source.objects.all(),
-        'collections' : Collection.objects.filter(user__id=request.user.id)
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
     }
 
     return render(request, template, data)
@@ -143,7 +146,7 @@ def collection_user(request, user, source, template="webfront/collection.html"):
         'unread_count' : links.count(),
         'paginator' : paginator,
         'links' : links,
-        'collections' : Collection.objects.filter(user__id=request.user.id),
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
         'sources' : Source.objects.all(),
         'page_range' : page_range,
     }

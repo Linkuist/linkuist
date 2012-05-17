@@ -20,14 +20,14 @@ FILTERFIELDCHOICES = (
 )
 
 class Collection(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, null=True, blank=True)
     name = models.CharField(max_length=128)
 
     def __unicode__(self):
-        return "%s (%d)" % (self.name, self.user_id)
+        return "%s (%d)" % (self.name, self.user_id or 0)
 
 class Filter(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, null=True, blank=True)
     regexp = models.CharField(max_length=64)
     field = models.CharField(choices=FILTERFIELDCHOICES, max_length=32)
     to_delete = models.BooleanField(default=False)
@@ -36,8 +36,8 @@ class Filter(models.Model):
 
     def __unicode__(self):
         if self.to_delete:
-            return u"delete match %s (%d)" % (self.regexp, self.user_id)
-        return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id)
+            return u"delete match %s (%d)" % (self.regexp, self.user_id or 0)
+        return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id or 0)
 
 class Source(models.Model):
     name = models.CharField(max_length=32)
