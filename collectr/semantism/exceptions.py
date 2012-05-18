@@ -11,3 +11,6 @@ class DeleteLinkException(BaseCollectorException):
 
 class UnsupportedContentException(BaseCollectorException):
     pass
+
+class UrlExtractException(BaseCollectorException):
+    pass

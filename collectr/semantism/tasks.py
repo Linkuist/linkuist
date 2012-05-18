@@ -39,13 +39,10 @@ from celery.registry import tasks
 from django.db.models import Q
 
 # collector
-#from collector.models import Filter, Collection, CollectionFilter
-from collector.exceptions import DeleteLinkException, UnsupportedContentException
+from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
+                                  UrlExtractException)
 from source.models import (Author, Source, Origin, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
-
-#collection_filters = CollectionFilter.objects.values().all()
-
 
 
 """
@@ -56,23 +53,32 @@ http://code.google.com/p/nltk/source/browse/trunk/nltk_contrib/nltk_contrib/misc
 
 """
 
-class ParsedUrl(object):
-    def __init__(self):
-        url = None
-        summary = None
-        html = None
+class UrlParser(object):
+    """Parse our url"""
 
-class TwitterStatus(Task):
-
-    def __init__(self, *args, **kwargs):
-        print "instanciating task"
-        super(Task, self).__init__(*args, **kwargs)
+    def __init__(self, logger, url):
         self.lang_classifier = textcat.TextCat("/home/benoit/projs/collectr/collectr/fpdb.conf", "/usr/share/libtextcat/LM")
+        self.tags = []
+        self.tagstring = None
+        self.title = []
+        self.summary = None
+        self.url = url
+        self.logger = logger
+        self.content = None
+        self.status_code = None
+        self.content_type = None
 
-    def clean_url(self, url):
+
+    def is_html_page(self):
+        return 'html' in self.content_type
+
+    def clean_url(self, url=None):
         import cgi
         import urlparse
         import urllib
+
+        if not url:
+            url = self.url
 
         u = urlparse.urlparse(url)
         qs = cgi.parse_qs(u[4])
@@ -82,7 +88,162 @@ class TwitterStatus(Task):
         u = u._replace(query=urllib.urlencode(qs, True))
         url = urlparse.urlunparse(u)
         url = url.replace('#!', '?_escaped_fragment_=')
+        self.logger.info("cleaned url : %s" % url)
         return url
+
+    def find_url_language(self, summary=None):
+        """Guess the content's language"""
+        if not summary:
+            summary = self.summary
+        if not len(summary):
+            self.lang = "en"
+            return self.lang
+        raw_text = summary[:]
+        lang = self.lang_classifier.classify(raw_text)
+        self.lang = lang[0].split("--")[0]
+        self.logger.info("found lang : %s" % self.lang)
+        return self.lang
+
+    def find_url_summary(self, url=None):
+        """resume the content of the link"""
+        if not url:
+            url = self.url
+
+        article = self.summary[:]
+
+        summary = ""
+        try:
+            tree = LH.fromstring(article)
+            xpath_l = tree.xpath('//p/text()')
+            summary = " ".join(xpath_l)
+            summary = summary[:150]
+        except Exception, exc:
+            print traceback.print_exc()
+            logger.error("no paragraph found in %s" % (url,))
+            summary = ""
+        if summary:
+            summary = summary.strip()
+        self.summary = summary
+        self.logger.info("summary : %s" % summary)
+        return summary
+
+    def find_collection(self, linksum, filtrs):
+        """Find the right collection for this link"""
+
+        for filtr in filtrs:
+            link_attr = getattr(linksum, filtr.field)
+            if re.match(filtr.regexp, link_attr):
+                if filtr.to_delete:
+                    raise DeleteLinkException("Deleting link")
+                linksum.collection_id = filtr.to_collection_id
+                return filtr
+        return None
+
+    def find_tags(self, summary=None, lang=None):
+        if not summary:
+            summary = self.summary
+        if not lang:
+            lang = self.lang
+
+        raw_text = summary[:]
+        if lang == "fr":
+            lang = "french"
+        elif lang == "en":
+            lang = "english"
+
+        scorer = BigramAssocMeasures.likelihood_ratio
+        compare_scorer = BigramAssocMeasures.raw_freq
+
+        tokenised = self.tokenise(raw_text)
+        ignored_words = stopwords.words(lang)
+        word_filter = lambda w: len(w) < 3 or w.lower() in ignored_words
+        cf = BigramCollocationFinder.from_words(tokenised)
+        cf.apply_freq_filter(3)
+        cf.apply_word_filter(word_filter)
+
+    #    print '\t', [' '.join(tup) for tup in cf.nbest(scorer, 15)]
+    #    print '\t Correlation to %s: %0.4f' % (compare_scorer.__name__,
+    #                spearman_correlation(
+    #                ranks_from_scores(cf.score_ngrams(scorer)),
+    #                ranks_from_scores(cf.score_ngrams(compare_scorer))))
+        self.tags = [' '.join(tup) for tup in cf.nbest(scorer, 15)]
+        self.tagstring = ",".join(self.tags)
+        return self.tags
+
+    def url_morph(self, url):
+        if url.startswith('http://twitpic.com/'):
+            url = re.sub("http://twitpic.com/([a-zA-Z0-9]*)", lambda x: "http://twitpic.com/show/full/%s.jpg" % x.group(1), url)
+        return url
+
+    def extract_url_content(self, url=None):
+        if not url:
+            url = self.url
+        url_parse = urlparse(url)
+        headers = {}
+        if url_parse.netloc != "t.co":
+            user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
+            headers['User-Agent'] = user_agent
+
+        content = requests.get(url, headers=headers)
+        self.content_type = content.headers.get('content-type')
+        self.status_code = content.status_code
+        self.content = content.text
+        self.url = content.url
+
+        self.url = self.url_morph(self.url)
+
+        if self.status_code >= 400:
+            raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
+
+        if "image" in self.content_type:
+            self.summary = """<img src="%s" />""" % self.url
+            self.title = self.url
+            return
+
+        if "html" in self.content_type:
+            doc = Document(self.content)
+            self.summary = doc.summary()
+            self.title = doc.short_title()
+            return
+
+        raise UrlExtractException("Can't extract content for %s" % url_parse.geturl())
+
+    def extract_link_xpath(self, xpath):
+        try:
+            doc = LH.fromstring(parsed_url.content)
+            result = doc.xpath(xpath)
+            if isinstance(result, (list, tuple)):
+                result = result[0]
+            for attr in ('style', 'border', 'height', 'width'):
+                try:
+                    del result.attrib[attr]
+                except KeyError:
+                    pass
+            self.summary = LH.tostring(result)
+            self.logger.info("extracted xpath content: %s" % self.summary)
+
+        except Exception, exc:
+            import traceback
+            print traceback.print_exc()
+            print "extract_link_xpath exc:", exc
+            return ""
+
+    def as_linksum(self):
+        """Return a linksum objet"""
+        pass
+
+    def tokenise(self, raw_text, callback=None):
+        raw = nltk.clean_html(raw_text)
+        tokens = nltk.wordpunct_tokenize(raw)
+        return tokens
+
+
+class TwitterStatus(Task):
+    """Specialised task for twitter statuses"""
+
+    def __init__(self, *args, **kwargs):
+        print "instanciating task"
+        super(Task, self).__init__(*args, **kwargs)
 
     def is_valid_url(self, status):
         if isinstance(status, unicode):
@@ -97,53 +258,42 @@ class TwitterStatus(Task):
         urls = [d['url'] for d in status.entities['urls']]
         return urls
 
-    def find_collection(self, lsum):
-        for filtr in self.filters:
-            link_attr = getattr(lsum, filtr.field)
-            if re.match(filtr.regexp, link_attr):
-                if filtr.to_delete:
-                    raise DeleteLinkException("Deleting lonk")
-                lsum.collection_id = filtr.to_collection_id
-                return filtr
-
-        return None
-
-    def find_language(self, raw_text):
-        lang = self.lang_classifier.classify(raw_text)
-        return lang[0].split("--")[0]
-
     def run(self, status, user_id, post_date, author, source, *args, **kwargs):
         logger = self.get_logger(**kwargs)
         user_id = int(user_id)
         self.filters = Filter.objects.filter(Q(user__pk=user_id) | Q(user__isnull=True))
         source = Source.objects.get(name__iexact=source)
         author, created = Author.objects.get_or_create(name=author, source=source)
-        default_collection = Collection.objects.get(name__iexact="all")
+        default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
         urls = self.is_valid_url(status)
         if not urls:
             logger.info("status invalid and ignored")
             return
-        logger.info("received status for user %d" %  user_id)
+
+        logger.info("received valid status for user %d" %  user_id)
+
         for url in urls:
-            url = self.clean_url(url)
             if not url:
                 continue
 
-            try:
-                parsed_url = extract_url_content(url)
-                url = parsed_url.url
-                title = parsed_url.title
+            url_parser = UrlParser(logger, url)
 
+            try:
+                url_parser.extract_url_content()
             except Exception, exc:
                 import traceback
                 print traceback.print_exc()
                 logger.error("Can't extract title from %s (%s)" % (url, exc))
-                return
+                return -1
+
             try:
-                url_m = Url.objects.get(link=url)
+                url_m = Url.objects.get(link=url_parser.url)
             except Url.DoesNotExist:
                 uv = UrlViews.objects.create(count=0)
-                url_m = Url.objects.create(link=url, views=uv)
+                try:
+                    url_m = Url.objects.create(link=url_parser.url, views=uv)
+                except Exception, exc:
+                    url_m = Url.objects.get(link=url_parser.url)
 
             try:
                 lsum = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
@@ -154,133 +304,44 @@ class TwitterStatus(Task):
             except LinkSum.DoesNotExist:
                 pass
 
-            logger.info("extracted url : %s" % url)
-            logger.info("extracted title : %s" % parsed_url.title)
+            if url_parser.is_html_page():
+                url_parser.find_url_summary()
 
-            summary = self.find_summary(parsed_url.summary, logger, url)
+                url_parser.find_url_language()
 
-            lang = self.find_language(parsed_url.summary)
-            interesting_words = filter_interesting_words(parsed_url.summary, lang)
-            tag_string = ",".join(interesting_words)
-            logger.info("tags : %s" % tag_string)
+                url_parser.find_tags()
 
-            for tmp_tag in interesting_words:
-                tag_m = Tag.objects.get_or_create(name=tmp_tag)
-                url_m.tags.add(tag_m[0])
+                tags = url_parser.find_tags()
 
-            url_m.raw_tags = tag_string
-            url_m.save()
-            url_m
+                for tag in tags:
+                    tag_m, created = Tag.objects.get_or_create(name=tag)
+                    url_m.tags.add(tag_m)
+
+                url_m.raw_tags = url_parser.tagstring
+                url_m.save()
 
             lsum = LinkSum(
-                tags=tag_string, summary=summary, url=url_m,
-                title=title, link=url, collection_id=default_collection.pk,
+                tags=url_parser.tagstring, summary=url_parser.summary, url=url_m,
+                title=url_parser.title, link=url_parser.url, collection_id=default_collection.pk,
                 read=False, recommanded=1, source=source,
                 user_id=user_id, author=author,
             )
+
             try:
-                filtr = self.find_collection(lsum)
+                filtr = url_parser.find_collection(lsum, self.filters)
                 if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
                     filtr.xpath = None
                     filtr.save()
                 if filtr and filtr.xpath is not None:
-                    lsum.summary = self.extract_link_xpath(filtr.xpath, parsed_url.content)
+                    lsum.summary = url_parser.extract_link_xpath(filtr.xpath, self.filters)
                     lsum.collection_id = filtr.to_collection_id
+                    self.logger.info("new collection : %d" % filtr.to_collection_id)
 
             except DeleteLinkException:
                 logger.info("Link not saved, filtered")
                 return
             lsum.save()
 
-    def extract_link_xpath(self, xpath, article):
-        try:
-            doc = LH.fromstring(article)
-            result = doc.xpath(xpath)
-            if isinstance(result, (list, tuple)):
-                result = result[0]
-            return LH.tostring(result)
-        except Exception, exc:
-            import traceback
-            print traceback.print_exc()
-            print "extract_link_xpath exc:", exc
-            return ""
 
-    def find_summary(self, article, logger, url):
-        summary = ""
-        try:
-            tree = LH.fromstring(article)
-            xpath_l = tree.xpath('//p/text()')
-            summary = " ".join(xpath_l)
-            summary = summary[:150]
-        except Exception, exc:
-            print traceback.print_exc()
-            logger.error("no paragraph found in %s" % (url,))
-            summary = ""
-        if summary:
-            summary = summary.strip()
-        return summary
 
 tasks.register(TwitterStatus)
-
-@task
-def extract_url_content(url, callback=None):
-    parsed_url = ParsedUrl()
-    url_parse = urlparse(url)
-    headers = {}
-    if url_parse.netloc != "t.co":
-        user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
-        headers['User-Agent'] = user_agent
-    content = requests.get(url, headers=headers)
-    parsed_url.content_type = content.headers.get('content-type')
-    parsed_url.status_code = content.status_code
-    parsed_url.content = content.text
-    parsed_url.url = content.url
-
-    if content.status_code >= 400:
-        raise Exception("Can't extract content for %s (http<%d>)" % (url, content.status_code))
-    if "image" in parsed_url.content_type:
-        parsed_url.summary = """<a href="%s>%s<a>""" % (url, url)
-        parsed_url.title = url
-        return parsed_url
-    if "html" in parsed_url.content_type:
-        html = content.text
-        doc = Document(html)
-        parsed_url.summary = doc.summary()
-        parsed_url.title = doc.short_title()
-        return parsed_url
-    raise Exception("Can't extract content for %s" % url_parse.geturl())
-
-@task
-def tokenise(raw_text, callback=None):
-    raw = nltk.clean_html(raw_text)
-    tokens = nltk.wordpunct_tokenize(raw)
-    return tokens
-#    print tokens
-#    tagged_words = nltk.pos_tag(tokens)
-#    simplified = [(word, simplify_wsj_tag(tag)) for word, tag in tagged_words]
-#    #print "sIMPLIFIED : ", simplified
-#    return simplified
-
-
-def filter_interesting_words(raw_text, lang):
-    if lang == "fr":
-        lang = "french"
-    elif lang == "en":
-        lang = "english"
-
-    scorer = BigramAssocMeasures.likelihood_ratio
-    compare_scorer = BigramAssocMeasures.raw_freq
-
-    tokenised = tokenise(raw_text)
-    ignored_words = stopwords.words(lang)
-    word_filter = lambda w: len(w) < 3 or w.lower() in ignored_words
-    cf = BigramCollocationFinder.from_words(tokenised)
-    cf.apply_freq_filter(3)
-    cf.apply_word_filter(word_filter)
-
-#    print '\t', [' '.join(tup) for tup in cf.nbest(scorer, 15)]
-#    print '\t Correlation to %s: %0.4f' % (compare_scorer.__name__,
-#                spearman_correlation(
-#                ranks_from_scores(cf.score_ngrams(scorer)),
-#                ranks_from_scores(cf.score_ngrams(compare_scorer))))
-    return [' '.join(tup) for tup in cf.nbest(scorer, 15)]
