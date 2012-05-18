@@ -66,7 +66,7 @@ class Tag(models.Model):
         return self.name
 
 class Url(models.Model):
-    link = models.TextField()
+    link = models.TextField(unique=True)
     views = models.ForeignKey(UrlViews)
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
