@@ -167,6 +167,21 @@ class UrlParser(object):
     #                ranks_from_scores(cf.score_ngrams(scorer)),
     #                ranks_from_scores(cf.score_ngrams(compare_scorer))))
         self.tags = [' '.join(tup) for tup in cf.nbest(scorer, 15)]
+        punctuation = set(string.punctuation)
+        tags = []
+
+        def has_punctuation(tag):
+            for c in string.punctuation:
+                if c in tag:
+                    return True
+
+            return False
+
+        for tag in self.tags:
+            tag = tag.title()
+            if not has_punctuation(tag):
+                tags.append(tag)
+        self.tags = tags
         self.tagstring = ",".join(self.tags)
         return self.tags
 
