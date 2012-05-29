@@ -235,7 +235,6 @@ class UrlParser(object):
                     pass
             self.summary = LH.tostring(result)
             self.logger.info("extracted xpath content: %s" % self.summary)
-
         except Exception, exc:
             import traceback
             print traceback.print_exc()
@@ -252,16 +251,19 @@ class UrlParser(object):
         tokens = nltk.wordpunct_tokenize(raw)
         return tokens
 
+class FakeLogger(object):
+
+    def info(self, s):
+        print s
 
 class TwitterStatus(Task):
     """Specialised task for twitter statuses"""
 
     def __init__(self, *args, **kwargs):
-        print "instanciating task"
         super(Task, self).__init__(*args, **kwargs)
 
     def is_valid_url(self, status):
-        if isinstance(status, unicode):
+        if isinstance(status, basestring):
             if 'http://' or 'https://' in status:
                 return [status]
         if not hasattr(status, "text"):
