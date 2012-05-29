@@ -241,6 +241,7 @@ class UrlParser(object):
             print traceback.print_exc()
             print "extract_link_xpath exc:", exc
             return ""
+        return self.summary
 
     def as_linksum(self):
         """Return a linksum objet"""
