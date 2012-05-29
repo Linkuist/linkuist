@@ -36,7 +36,7 @@ from celery.task.sets import subtask
 from celery.registry import tasks
 
 # django
-from django.db.models import Q
+from django.db.models import Q, F
 
 # collector
 from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
@@ -311,9 +311,7 @@ class TwitterStatus(Task):
                     url_m = Url.objects.get(link=url_parser.url)
 
             try:
-                lsum = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
-                lsum.recommanded += 1
-                lsum.save()
+                lsum = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
                 logger.info("url already in database")
                 continue
             except LinkSum.DoesNotExist:
@@ -354,7 +352,10 @@ class TwitterStatus(Task):
             except DeleteLinkException:
                 logger.info("Link not saved, filtered")
                 return
-            lsum.save()
+            try:
+                lsum.save()
+            except:
+                lsum = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
 
 
 

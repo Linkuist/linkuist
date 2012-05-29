@@ -94,6 +94,12 @@ class LinkSum(models.Model):
     old_author = models.CharField(max_length=64, db_column="author")
     author = models.ForeignKey(Author, null=True, blank=True)
 
+    class Meta:
+        unique_together = ("url", "user")
+
+    def __unicode__(self):
+        return u'%s - user(%d) collection(%d)' % (self.link, self.user_id, self.collection_id)
+
     def reco(self):
         return """%d""" % self.recommanded
     reco.short_description = "Reco"

@@ -1,4 +1,5 @@
-# Create your views here.
+# python
+from datetime import datetime, timedelta
 
 # django
 from django.contrib.auth.decorators import login_required
@@ -26,7 +27,6 @@ def get_display_paginate_item(paginator, page):
     max_page_display = 10
     page_range = []
     max_page = paginator.num_pages
-    print "page:", page
     if page == 1:
         if max_page > max_page_display:
             page_range = range(1, max_page_display)
@@ -42,8 +42,55 @@ def get_display_paginate_item(paginator, page):
         page_range = [1, "..."]
         page_range.append(range(max_page_display - 10, max_page_display))
 
-    print page_range
     return page_range
+
+
+@login_required
+def links_today(request, collection=None, template="webfront/links_today.html"):
+    show_read = True
+    now = datetime.now()
+    yesterday = datetime.now() - timedelta(days=1)
+    if collection == "unread" or not collection:
+        show_unread = False
+        collection = "all"
+    qs = LinkSum.objects.select_related('author')\
+                        .filter(user__id=request.user.id)\
+                        .filter(inserted_at__range=(yesterday, now))\
+                        .order_by('recommanded')
+    if not show_read:
+        qs.filter(read=False)
+
+    if collection:
+        collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
+                                       .get(name__iexact=collection)
+        qs = qs.filter(collection__id=collection.id)
+
+    paginator = Paginator(qs, 42)
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+
+    try:
+        links = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        links = paginator.page(paginator.num_pages)
+
+    page_range = get_display_paginate_item(paginator, page)
+    paginator = links
+    links = links.object_list
+    data = {
+        'unread_count' : links.count(),
+        'paginator' : paginator,
+        'links' : links,
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
+        'sources' : Source.objects.all(),
+        'page_range' : page_range,
+    }
+
+    return render(request, template, data)
+
+
 
 @login_required
 def collection(request, collection=None, template="webfront/collection.html"):
@@ -53,7 +100,6 @@ def collection(request, collection=None, template="webfront/collection.html"):
         collection = "all"
     collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
                                    .get(name__iexact=collection)
-
     qs = LinkSum.objects.select_related('author')\
                         .filter(user__id=request.user.id)\
                         .filter(collection__id=collection.id)\
@@ -61,6 +107,7 @@ def collection(request, collection=None, template="webfront/collection.html"):
     if not show_read:
         qs.filter(read=False)
 
+    print request.user.id
     paginator = Paginator(qs, 42)
     try:
         page = int(request.GET.get('page', '1'))
