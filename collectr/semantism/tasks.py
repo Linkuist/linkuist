@@ -68,7 +68,6 @@ class UrlParser(object):
         self.status_code = None
         self.content_type = None
 
-
     def is_html_page(self):
         return 'html' in self.content_type
 
@@ -141,7 +140,7 @@ class UrlParser(object):
 
     def find_tags(self, summary=None, lang=None):
         if not summary:
-            summary = self.summary
+            summary = self.content
         if not lang:
             lang = self.lang
 
@@ -225,7 +224,7 @@ class UrlParser(object):
 
     def extract_link_xpath(self, xpath):
         try:
-            doc = LH.fromstring(parsed_url.content)
+            doc = LH.fromstring(self.content)
             result = doc.xpath(xpath)
             if isinstance(result, (list, tuple)):
                 result = result[0]
@@ -324,11 +323,10 @@ class TwitterStatus(Task):
 
                 url_parser.find_url_language()
 
-                url_parser.find_tags()
-
                 tags = url_parser.find_tags()
 
                 for tag in tags:
+                    tag = tag.title()
                     tag_m, created = Tag.objects.get_or_create(name=tag)
                     url_m.tags.add(tag_m)
 
@@ -348,9 +346,9 @@ class TwitterStatus(Task):
                     filtr.xpath = None
                     filtr.save()
                 if filtr and filtr.xpath is not None:
-                    lsum.summary = url_parser.extract_link_xpath(filtr.xpath, self.filters)
+                    lsum.summary = url_parser.extract_link_xpath(filtr.xpath)
                     lsum.collection_id = filtr.to_collection_id
-                    self.logger.info("new collection : %d" % filtr.to_collection_id)
+                    logger.info("new collection : %d" % filtr.to_collection_id)
 
             except DeleteLinkException:
                 logger.info("Link not saved, filtered")
