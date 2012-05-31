@@ -5,11 +5,11 @@ from django.conf.urls.defaults import patterns, include, url
 from collector import views
 
 # celery
-from djcelery import views as celery_views
+#from djcelery import views as celery_views
 
 
 urlpatterns = patterns('',
-    url(r'^$', views.home, name="home"),
-    url(r'^task/(?P<task_name>.+?)/', celery_views.apply),
+    url(r'^bookmark/$', views.bookmark, name="bookmark"),
+#    url(r'^task/(?P<task_name>.+?)/', celery_views.apply),
 )
 

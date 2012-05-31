@@ -1,17 +1,17 @@
+# python
+from datetime import datetime
+
 # django
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect
 
-#collector
-from collector.models import Collection, CollectionItem
+# semantism
+from semantism.tasks import TwitterStatus
 
 @login_required
-def home(request, template_name="collection/home.html"):
-
-    collections = Collection.objects.all()
-
-    data = {
-        'collections' : collections,
-    }
-
-    return render(request, template_name, data)
+def bookmark(request, template_name="collector/bookmark.html"):
+    url = request.GET.get('url')
+    user = request.user
+    t = TwitterStatus()
+    t.apply_async(args=(url, request.user.id, datetime.now(), request.user.username, "bookmarks"))
+    return redirect(url)

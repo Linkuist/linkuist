@@ -19,5 +19,6 @@ urlpatterns = patterns('',
     url(r'', include('social_auth.urls')),
     url(r'', include('webfront.urls', namespace='webfront')),
     url(r'', include('link_tracking.urls', namespace='link_tracking')),
-    url(r'^celery/', include('djcelery.urls')),
+    url(r'^collector/', include('collector.urls', namespace='collector')),
+#    url(r'^celery/', include('djcelery.urls')),
 )
