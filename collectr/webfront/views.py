@@ -56,7 +56,7 @@ def links_today(request, collection=None, template="webfront/links_today.html"):
     qs = LinkSum.objects.select_related('author')\
                         .filter(user__id=request.user.id)\
                         .filter(inserted_at__range=(yesterday, now))\
-                        .order_by('recommanded')
+                        .order_by('-recommanded')
     if not show_read:
         qs.filter(read=False)
 
