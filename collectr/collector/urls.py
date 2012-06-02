@@ -10,6 +10,7 @@ from collector import views
 
 urlpatterns = patterns('',
     url(r'^bookmark/$', views.bookmark, name="bookmark"),
+    url(r'^bookmark/secret/(?P<username>\w+)/$', views.secret_bookmark, name="secret_bookmark"),
 #    url(r'^task/(?P<task_name>.+?)/', celery_views.apply),
 )
 
