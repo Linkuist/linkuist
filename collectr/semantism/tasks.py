@@ -329,7 +329,10 @@ class TwitterStatus(Task):
 
                 for tag in tags:
                     tag = tag.title()
-                    tag_m, created = Tag.objects.get_or_create(name=tag)
+                    try:
+                        tag_m, created = Tag.objects.get_or_create(name=tag)
+                    except Exception, e:
+                        tag_m = Tag.objects.get(name=tag)
                     url_m.tags.add(tag_m)
 
                 url_m.raw_tags = url_parser.tagstring
