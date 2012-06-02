@@ -280,7 +280,10 @@ class TwitterStatus(Task):
         user_id = int(user_id)
         self.filters = Filter.objects.filter(Q(user__pk=user_id) | Q(user__isnull=True))
         source = Source.objects.get(name__iexact=source)
-        author, created = Author.objects.get_or_create(name=author, source=source)
+        try:
+            author, created = Author.objects.get_or_create(name=author, source=source)
+        except Exception:
+            author = Author.objects.get(name=author)
         default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
         urls = self.is_valid_url(status)
         if not urls:

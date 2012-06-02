@@ -75,7 +75,7 @@ class Url(models.Model):
         return self.link
 
 class Author(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
     source = models.ForeignKey(Source)
 
 class LinkSum(models.Model):
