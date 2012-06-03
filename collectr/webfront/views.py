@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 # django
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from django.db.models import Q
 from django.shortcuts import render, redirect
 
