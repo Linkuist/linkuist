@@ -315,10 +315,13 @@ class TwitterStatus(Task):
                 except Exception, exc:
                     url_m = Url.objects.get(link=url_parser.url)
 
-            links_numb = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
-            if links_numb:
+            try:
+                links_numb = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
                 logger.info("url already in database")
                 continue
+            except Exception:
+                # link does not exist for now
+                pass
 
             if url_parser.is_html_page():
                 url_parser.find_url_summary()
