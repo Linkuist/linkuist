@@ -209,18 +209,21 @@ class UrlParser(object):
         if self.status_code >= 400:
             raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
 
-        if "image" in self.content_type:
+        elif "image" in self.content_type:
             self.summary = """<img src="%s" />""" % self.url
             self.title = self.url
-            return
 
-        if "html" in self.content_type:
+        elif "html" in self.content_type:
             doc = Document(self.content)
             self.summary = doc.summary()
-            self.title = doc.short_title()
-            return
+            try:
+                self.title = doc.short_title()
+            except AttributeError:
+                self.title = u"No title"
 
-        raise UrlExtractException("Can't extract content for %s" % url_parse.geturl())
+        else:
+            self.summary = None
+            self.title = os.path.basename(url_parse.path)
 
     def extract_link_xpath(self, xpath):
         try:
