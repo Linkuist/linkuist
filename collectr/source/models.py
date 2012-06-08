@@ -70,6 +70,7 @@ class Url(models.Model):
     views = models.ForeignKey(UrlViews)
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
+    content = models.TextField()
 
     def __unicode__(self):
         return self.link

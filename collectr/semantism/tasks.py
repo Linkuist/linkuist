@@ -315,7 +315,9 @@ class TwitterStatus(Task):
             except Url.DoesNotExist:
                 uv = UrlViews.objects.create(count=0)
                 try:
-                    url_m = Url.objects.create(link=url_parser.url, views=uv)
+                    url_m = Url.objects.create(link=url_parser.url, views=uv,
+                                               content=url_parser.summary)
+
                 except Exception, exc:
                     url_m = Url.objects.get(link=url_parser.url)
 
