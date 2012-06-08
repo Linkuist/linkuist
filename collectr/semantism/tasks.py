@@ -4,6 +4,7 @@
 
 """
 # python
+import os
 import pprint
 import re
 import string
@@ -319,10 +320,12 @@ class TwitterStatus(Task):
                     url_m = Url.objects.get(link=url_parser.url)
 
             try:
-                links_numb = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
+                links_numb = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
+                links_numb.recommanded += 1
+                links_numb.save()
                 logger.info("url already in database")
                 continue
-            except Exception:
+            except LinkSum.DoesNotExist:
                 # link does not exist for now
                 pass
 
