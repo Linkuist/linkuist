@@ -40,8 +40,10 @@ from celery.registry import tasks
 from django.db.models import Q, F
 
 # collector
+from semantism.embed import oembed
 from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
                                   UrlExtractException)
+
 from source.models import (Author, Source, Origin, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
 
@@ -203,9 +205,21 @@ class UrlParser(object):
         self.content_type = content.headers.get('content-type')
         self.status_code = content.status_code
         self.content = content.text
-        self.url = content.url
+        self.url = self.url_morph(content.url)
+        url_parse = urlparse(url)
 
-        self.url = self.url_morph(self.url)
+        if url_parse.netloc in oembed.keys():
+            print "found oembed"
+            mod = oembed[url_parse.netloc]
+            self.content = mod.get_widget(url)
+            self.summary = self.content
+            self.title = os.path.basename(url_parse.path)
+            self.content_type = "collectr/parsed"
+            self.tags = [mod.get_tag()]
+            self.tagstring = mod.get_tag()
+            return
+
+
 
         if self.status_code >= 400:
             raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
@@ -371,7 +385,8 @@ class TwitterStatus(Task):
                 return
             try:
                 lsum.save()
-            except:
+            except Exception, exc:
+                print exc
                 lsum = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
 
 
