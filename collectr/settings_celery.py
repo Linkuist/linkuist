@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from settings import *
+
+DEBUG = False
+
 #BROKER_HOST = "localhost"
 #BROKER_PORT = 5672
 #BROKER_USER = "guest"
@@ -10,6 +14,9 @@
 #CELERY_REDIS_DB = 0
 BROKER_URL = "redis://localhost:6379/0"
 
+INSTALLED_APPS += (
+    'djcelery',
+)
 
 import djcelery
 djcelery.setup_loader()

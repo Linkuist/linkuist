@@ -15,11 +15,11 @@ from datetime import datetime
 sys.path.append('../')
 sys.path.append('../../')
 
-os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings_celery'
 
 import simplejson as json
 
-from collectr import settings
+from collectr import settings_celery as settings
 from django.core.management import setup_environ
 setup_environ(settings)
 

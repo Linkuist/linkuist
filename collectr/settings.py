@@ -126,7 +126,6 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'django_extensions',
     'south',
-    'djcelery',
     'social_auth',
 
     'collector',
@@ -189,7 +188,3 @@ LOGGING = {
     'version' : 1,
 }
 
-try:
-    from settings_celery import *
-except ImportError:
-    print "can't import celery"
