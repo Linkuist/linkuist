@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.shortcuts import render, redirect
 
 # collector
-from source.models import LinkSum, Collection, Source
+from source.models import LinkSum, Collection, Source, Url
 
 
 def home(request, template="webfront/home.html"):
@@ -20,6 +20,20 @@ def home(request, template="webfront/home.html"):
 
 def login_view(request, template="webfront/login.html"):
     data = {}
+    return render(request, template, data)
+
+def search(request, template="webfront/collection.html"):
+    data = {}
+    querystring = request.GET['query'].replace(' ', ' & ')
+
+    links = LinkSum.objects.raw("""SELECT * FROM source_linksum INNER JOIN source_url ON (source_linksum.url_id = source_url.id) AND to_tsvector('english', source_url.content) @@ to_tsquery('english', %s);""",
+                           [querystring])
+
+    data = {
+        'links' : links,
+        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
+        'sources' : Source.objects.all(),
+    }
     return render(request, template, data)
 
 
