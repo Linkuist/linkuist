@@ -114,3 +114,17 @@ class LinkSum(models.Model):
         if self.tags:
             return self.tags.split(',')
         return []
+
+class Rss(models.Model):
+    link = models.URLField(verify_exists=False, max_length=1024, unique=True)
+    name = models.CharField(max_length=128)
+    users = models.ManyToManyField(User)
+    etag = models.CharField(max_length=128, null=True, blank=True)
+
+    class Meta:
+        verbose_name = u'Rss'
+        verbose_name_plural = u'Rss'
+
+    def __unicode__(self):
+        return self.name
+

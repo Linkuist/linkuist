@@ -8,7 +8,8 @@ from django.contrib import admin
 
 # local
 from source.models import (Source, LinkSum, Collection,
-                           Filter, Tag, Url, UrlViews)
+                           Filter, Tag, Url, UrlViews,
+                           Rss)
 
 class TagAdmin(admin.ModelAdmin):
     pass
@@ -36,6 +37,9 @@ class LinkSumAdmin(admin.ModelAdmin):
 class SourceAdmin(admin.ModelAdmin):
     pass
 
+class RssAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Filter, FilterAdmin)
 admin.site.register(LinkSum, LinkSumAdmin)
 admin.site.register(Source, SourceAdmin)
@@ -43,3 +47,4 @@ admin.site.register(Collection, CollectionAdmin)
 admin.site.register(Url, UrlAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(UrlViews, UrlViewsAdmin)
+admin.site.register(Rss, RssAdmin)
