@@ -362,6 +362,8 @@ class TwitterStatus(Task):
 
                 url_m.raw_tags = url_parser.tagstring
                 url_m.save()
+            else:
+                tags = ""
 
             lsum = LinkSum(
                 tags=url_parser.tagstring, summary=url_parser.summary, url=url_m,
