@@ -1,6 +1,8 @@
 import imp
 import os
 
+
+__all__ = ['sndcloud', 'twitpic']
 oembed = {}
 module_dir = __package__.replace('.', '/')
 for module_path in os.listdir(module_dir):

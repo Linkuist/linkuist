@@ -40,7 +40,10 @@ from celery.registry import tasks
 from django.db.models import Q, F
 
 # collector
-from semantism.embed import oembed
+try:
+    from semantism.embed import oembed
+except Exception, exc:
+    oembed = {}
 from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
                                   UrlExtractException)
 
