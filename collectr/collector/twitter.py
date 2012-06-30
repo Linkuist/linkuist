@@ -59,7 +59,7 @@ if __name__ == "__main__":
     try:
         user = User.objects.get(username=user)
     except User.DoesNotExist:
-        print "User %s does not exist" % self.user
+        print "User %s does not exist" % user
         sys.exit()
 
     auth_dict = UserSocialAuth.objects.values().get(user__id=user.pk)['extra_data']
