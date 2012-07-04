@@ -22,13 +22,19 @@ def login_view(request, template="webfront/login.html"):
     data = {}
     return render(request, template, data)
 
-def search(request, template="webfront/collection.html"):
+def search(request, template="webfront/search.html"):
     data = {}
     querystring = request.GET['query'].replace(' ', ' & ')
 
-    links = LinkSum.objects.raw("""SELECT * FROM source_linksum INNER JOIN source_url ON (source_linksum.url_id = source_url.id) AND to_tsvector('english', source_url.content) @@ to_tsquery('english', %s);""",
-                           [querystring])
-
+    links = LinkSum.objects.raw(
+        """SELECT "source_linksum"."id", "source_linksum"."tags", "source_linksum"."summary", "source_linksum"."title", "source_linksum"."link", "source_linksum"."url_id", "source_linksum"."origin_id", "source_linksum"."source_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id", "source_linksum"."author", "source_linksum"."author_id"
+           FROM source_linksum 
+           INNER JOIN source_url ON 
+              (source_linksum.url_id = source_url.id) 
+           AND 
+              to_tsvector('english', source_url.content) @@ to_tsquery('english', %s);
+         """, [querystring])
+    
     data = {
         'links' : links,
         'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
