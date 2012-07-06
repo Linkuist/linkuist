@@ -32,7 +32,8 @@ def search(request, template="webfront/search.html"):
            INNER JOIN source_url ON 
               (source_linksum.url_id = source_url.id) 
            AND 
-              to_tsvector('english', source_url.content) @@ to_tsquery('english', %s);
+              to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
+           ORDER BY "source_linksum"."inserted_at" DESC;
          """, [querystring])
     
     data = {
