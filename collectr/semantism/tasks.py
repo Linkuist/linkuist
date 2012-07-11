@@ -209,6 +209,7 @@ class UrlParser(object):
         self.status_code = content.status_code
         self.content = content.text
         self.url = self.url_morph(content.url)
+        self.image = self.find_taller_image(self.content)
         url_parse = urlparse(url)
 
         if url_parse.netloc in oembed.keys():
@@ -228,6 +229,7 @@ class UrlParser(object):
             raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
 
         elif "image" in self.content_type:
+            print "log: content type : image"
             self.summary = """<img src="%s" />""" % self.url
             self.title = self.url
 
@@ -238,6 +240,8 @@ class UrlParser(object):
                 self.title = doc.short_title()
             except AttributeError:
                 self.title = u"No title"
+            self.summary = """<img src="%s" />%s""" % (self.image, self.summary) 
+
 
         else:
             self.summary = None
@@ -271,6 +275,27 @@ class UrlParser(object):
         raw = nltk.clean_html(raw_text)
         tokens = nltk.wordpunct_tokenize(raw)
         return tokens
+
+    def find_taller_image(self, page_content):
+        best_perimeter = 0
+        found_image = None
+
+        tree = LH.fromstring(page_content)
+        image_list = tree.xpath("//img")
+
+        for image in image_list:
+            width = image.get('width')
+            height = image.get('height')
+            if width and height:
+                width = int(width)
+                height = int(height)
+                perimeter = width * height
+                if perimeter > best_perimeter:
+                    best_perimeter = perimeter
+                    found_image = image.get('src')
+
+        return found_image
+
 
 class FakeLogger(object):
 
