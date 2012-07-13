@@ -67,6 +67,7 @@ class UrlParser(object):
         self.tags = []
         self.tagstring = None
         self.title = []
+        self.image = None
         self.summary = None
         self.url = url
         self.logger = logger
@@ -116,21 +117,24 @@ class UrlParser(object):
 
         article = self.summary[:]
 
-        summary = ""
-        try:
-            tree = LH.fromstring(article)
-            xpath_l = tree.xpath('//p/text()')
-            summary = " ".join(xpath_l)
-            summary = summary[:150]
-        except Exception, exc:
-            print traceback.print_exc()
-            logger.error("no paragraph found in %s" % (url,))
+        if 'html' in self.content_type:
             summary = ""
-        if summary:
-            summary = summary.strip()
-        self.summary = summary
-        self.logger.info("summary : %s" % summary)
-        return summary
+            try:
+                tree = LH.fromstring(article)
+                xpath_l = tree.xpath('//p/text()')
+                summary = " ".join(xpath_l)
+                summary = summary[:150]
+            except Exception, exc:
+                print traceback.print_exc()
+                logger.error("no paragraph found in %s" % (url,))
+                summary = ""
+            if summary:
+                summary = summary.strip()
+            self.summary = summary
+            if self.image:
+                self.summary = """<img src="%s" /><span>%s</span>""" % (self.image, self.summary)
+        self.logger.info("summary : %s" % self.summary)
+        return self.summary
 
     def find_collection(self, linksum, filtrs):
         """Find the right collection for this link"""
@@ -210,6 +214,8 @@ class UrlParser(object):
         self.content = content.text
         self.url = self.url_morph(content.url)
         self.image = self.find_taller_image(self.content)
+        if self.image:
+            self.logger.info("found image : %s"%self.image)
         url_parse = urlparse(url)
 
         if url_parse.netloc in oembed.keys():
@@ -240,7 +246,6 @@ class UrlParser(object):
                 self.title = doc.short_title()
             except AttributeError:
                 self.title = u"No title"
-            self.summary = """<img src="%s" />%s""" % (self.image, self.summary) 
 
 
         else:
@@ -279,7 +284,9 @@ class UrlParser(object):
     def find_taller_image(self, page_content):
         best_perimeter = 0
         found_image = None
-
+        if len(page_content) <= 0:
+            self.logger.info("Page has no content")
+            return found_image
         tree = LH.fromstring(page_content)
         image_list = tree.xpath("//img")
 
