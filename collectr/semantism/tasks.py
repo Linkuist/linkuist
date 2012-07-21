@@ -123,13 +123,15 @@ class UrlParser(object):
                 tree = LH.fromstring(article)
                 xpath_l = tree.xpath('//p/text()')
                 summary = " ".join(xpath_l)
-                summary = summary[:150]
             except Exception, exc:
                 print traceback.print_exc()
                 logger.error("no paragraph found in %s" % (url,))
                 summary = ""
             if summary:
-                summary = summary.strip()
+                summary = summary.split('.')
+                summary = filter(len, summary)
+                summary = ". ".join(summary[:3])
+                summary += "."
             self.summary = summary
             if self.image:
                 self.summary = """<img src="%s" /><span>%s</span>""" % (self.image, self.summary)
