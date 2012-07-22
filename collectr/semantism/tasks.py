@@ -132,6 +132,8 @@ class UrlParser(object):
                 summary = filter(len, summary)
                 summary = ". ".join(summary[:3])
                 summary += "."
+                if len(summary) > 600:
+                    summary[:500]
             self.summary = summary
             if self.image:
                 self.summary = """<img src="%s" /><span>%s</span>""" % (self.image, self.summary)
