@@ -39,6 +39,9 @@
           <p> {% for tag in link.get_tags %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
+            {% if link.url.image %}
+            <img src="{{ link.url.image }}" />
+            {% endif %}
           {% if not link.summary == "None" %}
           <p>{{ link.summary|safe }}</p>
           {% endif %}

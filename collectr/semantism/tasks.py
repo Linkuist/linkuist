@@ -135,8 +135,6 @@ class UrlParser(object):
                 if len(summary) > 600:
                     summary[:500]
             self.summary = summary
-            if self.image:
-                self.summary = """<img src="%s" /><span>%s</span>""" % (self.image, self.summary)
         self.logger.info("summary : %s" % self.summary)
         return self.summary
 
@@ -220,7 +218,7 @@ class UrlParser(object):
         self.image = self.find_taller_image(self.content)
         if self.image:
             self.logger.info("found image : %s"%self.image)
-        url_parse = urlparse(url)
+        self.url_parse = urlparse(self.url)
 
         if url_parse.netloc in oembed.keys():
             print "found oembed"
@@ -305,6 +303,10 @@ class UrlParser(object):
                     best_perimeter = perimeter
                     found_image = image.get('src')
 
+        if found_image and found_image.startswith('/'):
+            url_parse = urlparse(self.url)
+            found_image = "%s%s%s" % (url_parse.scheme,
+                    url_parse.netloc, found_image)
         return found_image
 
 
@@ -369,7 +371,8 @@ class TwitterStatus(Task):
                 uv = UrlViews.objects.create(count=0)
                 try:
                     url_m = Url.objects.create(link=url_parser.url, views=uv,
-                                               content=url_parser.summary)
+                                               content=url_parser.summary,
+                                               image=url_parser.image)
 
                 except Exception, exc:
                     url_m = Url.objects.get(link=url_parser.url)
@@ -410,6 +413,10 @@ class TwitterStatus(Task):
                 read=False, recommanded=1, source=source,
                 user_id=user_id, author=author,
             )
+
+            if url_parser.image and not url_m.image:
+                url_m.image = url_parser.image
+                url_m.save()
 
             try:
                 filtr = url_parser.find_collection(lsum, self.filters)

@@ -71,6 +71,7 @@ class Url(models.Model):
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
     content = models.TextField()
+    image = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return self.link
