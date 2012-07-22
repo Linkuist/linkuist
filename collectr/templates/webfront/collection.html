@@ -23,14 +23,13 @@
 
       <div class="row-fluid">
 {% for link in links %}
-        <div class="span4">
+        <div class="span6">
             <h3>{{ link.title }}
-          {% if link.read %}
-          <i class="icon-search"></i>
-          {% else %}
-          <i class="icon-envelope"></i>
-          {% endif %}
-            
+              {% if link.read %}
+              <i class="icon-search"></i>
+              {% else %}
+              <i class="icon-envelope"></i>
+              {% endif %}
             </h3>
             <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
                 <span class="label label-success">{{ link.author.name }}</span>
@@ -47,7 +46,7 @@
           {% endif %}
           <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
-    {% if forloop.counter|divisibleby:"3" %}
+    {% if forloop.counter|divisibleby:"2" %}
     </div><!--/row-->
     <div class="row-fluid">
     {% endif %}
