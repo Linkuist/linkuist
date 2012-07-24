@@ -88,9 +88,7 @@ class UrlParser(object):
 
         u = urlparse.urlparse(url)
         qs = cgi.parse_qs(u[4])
-        for key in qs:
-            if key.startswith('utm_'):
-                del qs[key]
+        qs = dict((k, v) for k, v in qs.iteritems() if not k.startswith('utm_'))
         u = u._replace(query=urllib.urlencode(qs, True))
         url = urlparse.urlunparse(u)
         url = url.replace('#!', '?_escaped_fragment_=')
@@ -214,6 +212,7 @@ class UrlParser(object):
         self.content_type = content.headers.get('content-type')
         self.status_code = content.status_code
         self.content = content.text
+        self.url = self.clean_url(self.url)
         self.url = self.url_morph(content.url)
         self.image = self.find_taller_image(self.content)
         if self.image:
