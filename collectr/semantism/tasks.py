@@ -305,7 +305,7 @@ class UrlParser(object):
 
         if found_image and found_image.startswith('/'):
             url_parse = urlparse(self.url)
-            found_image = "%s%s%s" % (url_parse.scheme,
+            found_image = "%s://%s%s" % (url_parse.scheme,
                     url_parse.netloc, found_image)
         return found_image
 
