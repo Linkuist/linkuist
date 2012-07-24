@@ -285,7 +285,7 @@ class UrlParser(object):
     def find_taller_image(self, page_content):
         best_perimeter = 0
         found_image = None
-        if len(page_content) <= 0:
+        if page_content and len(page_content) <= 0:
             self.logger.info("Page has no content")
             return found_image
         tree = LH.fromstring(page_content)
