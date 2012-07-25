@@ -295,8 +295,11 @@ class UrlParser(object):
             width = image.get('width')
             height = image.get('height')
             if width and height:
-                width = int(width)
-                height = int(height)
+                try:
+                    width = int(width)
+                    height = int(height)
+                except ValueError:
+                    continue
                 perimeter = width * height
                 if perimeter > best_perimeter:
                     best_perimeter = perimeter
