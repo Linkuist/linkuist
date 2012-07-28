@@ -32,7 +32,7 @@
               {% endif %}
             </h3>
             {% if not link.author_id %}
-            {% for author in link.authors %}
+            {% for author in link.authors.all %}
                 <a href="{% url webfront:collection_user author.name, author.source_id %}">
                     <span class="label label-success">{{ author.name }}</span>
                 </a>

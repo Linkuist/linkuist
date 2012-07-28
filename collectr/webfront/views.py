@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
 from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 
 # collector
 from source.models import LinkSum, Collection, Source, Url
@@ -74,7 +75,8 @@ def links_today(request, collection=None, template="webfront/links_today.html"):
     if collection == "unread" or not collection:
         show_unread = False
         collection = "all"
-    qs = LinkSum.objects.select_related('author')\
+    qs = LinkSum.objects.select_related('authors')\
+                        .filter(hidden=False)\
                         .filter(user__id=request.user.id)\
                         .filter(inserted_at__range=(yesterday, now))\
                         .order_by('-recommanded')
@@ -121,8 +123,9 @@ def collection(request, collection=None, template="webfront/collection.html"):
         collection = "all"
     collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
                                    .get(name__iexact=collection)
-    qs = LinkSum.objects.select_related('author')\
+    qs = LinkSum.objects.select_related('authors')\
                         .filter(user__id=request.user.id)\
+                        .filter(hidden=False)\
                         .filter(collection__id=collection.id)\
                         .order_by('-pk')
     if not show_read:
@@ -156,9 +159,10 @@ def collection(request, collection=None, template="webfront/collection.html"):
 
 @login_required
 def collection_source(request, source, template="webfront/collection.html"):
-    links = LinkSum.objects.select_related('author')\
+    links = LinkSum.objects.select_related('authors')\
                            .filter(user__id=request.user.id)\
                            .filter(source__slug=source)\
+                           .filter(hidden=False)\
                            .order_by('-pk')[:100]
     data = {
         'unread_count' : links.count(),
@@ -172,8 +176,9 @@ def collection_source(request, source, template="webfront/collection.html"):
 
 @login_required
 def collection_tag(request, tag, template="webfront/collection.html"):
-    links = LinkSum.objects.select_related('author')\
+    links = LinkSum.objects.select_related('authors')\
                            .filter(user__id=request.user.id)\
+                           .filter(hidden=False)\
                            .filter(url__tags__name=tag)\
                            .order_by('-pk')[:100]
     data = {
@@ -188,10 +193,11 @@ def collection_tag(request, tag, template="webfront/collection.html"):
 @login_required
 def collection_user(request, user, source, template="webfront/collection.html"):
     show_read = True
-    qs = LinkSum.objects.select_related('author')\
+    qs = LinkSum.objects.select_related('authors')\
                         .filter(user__id=request.user.id)\
-                        .filter(author__name=user)\
-                        .filter(author__source=source)\
+                        .filter(authors__name=user)\
+                        .filter(authors__source=source)\
+                        .filter(hidden=False)\
                         .order_by('-pk')
     if not show_read:
         qs.filter(read=False)

@@ -93,8 +93,8 @@ class LinkSum(models.Model):
     collection = models.ForeignKey(Collection, null=True)
     inserted_at = models.DateTimeField(default=datetime.now)
     user = models.ForeignKey(User)
-    author = models.ForeignKey(Author, null=True, blank=True)
     authors = models.ManyToManyField(Author, related_name="authors")
+    hidden = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("url", "user")
