@@ -7,15 +7,17 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import redirect
 
-# semantism
-from semantism.tasks import TwitterStatus
+# rq
+from redis import Redis
+from rq import use_connection, Queue
+
+links_queue = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
 
 @login_required
 def bookmark(request, template_name="collector/bookmark.html"):
     url = request.GET.get('url')
     user = request.user
-    t = TwitterStatus()
-    t.apply_async(args=(url, request.user.id, datetime.now(), request.user.username, "bookmarks"))
+    links_queue.enqueue(index_url, url, request.user.id, datetime.now(), request.user.username, "bookmarks")
     return redirect(url)
 
 
@@ -32,9 +34,7 @@ def secret_bookmark(request, username):
     except User.DoesNotExist:
         return HttpResponse(status=403)
 
-    t = TwitterStatus()
-    t.apply_async(args=(url, user.id, datetime.now(), link_from, source))
+    links_queue.enqueue(url, url, user.id, datetime.now(), link_from, source)
 
     return HttpResponse(status=201)
-
 
