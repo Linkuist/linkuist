@@ -16,7 +16,7 @@ from datetime import datetime
 sys.path.append('../')
 sys.path.append('../../')
 
-os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.setting'
+os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
 
 from collectr import settings
 from django.core.management import setup_environ
@@ -26,11 +26,17 @@ setup_environ(settings)
 from django.contrib.auth.models import User
 
 # semantism
-from semantism.tasks import TwitterStatus
 from source.models import Rss
+from semantism import index_url
+
+# rq
+from redis import Redis
+from rq import use_connection, Queue
+
 
 def fetch_rss():
     rss_feeds = Rss.objects.all()
+    q = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
 
     for rss_feed in rss_feeds:
         feed = feedparser.parse(rss_feed.link)
@@ -47,9 +53,7 @@ def fetch_rss():
 
 
                 for user in rss_feed.users.all():
-                    TwitterStatus.apply_async(args=(entry['link'], user.pk,
-                                              date_published, urlp.netloc,
-                                              "Rss"))
+                    q.enqueue(index_url, entry['link'], user.pk, date_published, urlp.netloc, "Rss")
             rss_feed.etag = feed['etag']
             rss_feed.save()
             time.sleep(1)
