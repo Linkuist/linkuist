@@ -104,6 +104,7 @@ def index_url(link, user_id, link_at, author_name, source_name):
             links_numb = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
             links_numb.recommanded += 1
             links_numb.save()
+            links_numb.authors.add(author)
             logger.info("url already in database")
             continue
             # link does not exist for now
@@ -137,7 +138,7 @@ def index_url(link, user_id, link_at, author_name, source_name):
             tags=url_parser.tagstring, summary=url_parser.summary, url=url_m,
             title=url_parser.title, link=url_parser.url, collection_id=default_collection.pk,
             read=False, recommanded=1, source=source,
-            user_id=user_id, author=author,
+            user_id=user_id,
         )
 
         if url_parser.image and not url_m.image:
@@ -162,4 +163,4 @@ def index_url(link, user_id, link_at, author_name, source_name):
         except Exception, exc:
             print exc
             lsum = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
-
+        lsum.authors.add(author)
