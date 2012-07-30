@@ -98,13 +98,15 @@ class UrlParser(object):
         """Guess the content's language"""
         if not summary:
             summary = self.summary
-        if not len(summary):
-            self.lang = "en"
-            return self.lang
+
         raw_text = summary[:]
-        lang = self.lang_classifier.classify(raw_text)
-        self.lang = lang[0].split("--")[0]
-        self.logger.info("found lang : %s" % self.lang)
+        try:
+            lang = self.lang_classifier.classify(raw_text)
+            self.lang = lang[0].split("--")[0]
+            self.logger.info("found lang : %s" % self.lang)
+        except Exception, exc:
+            self.logger.warning("Can't find document lang, fallback to english")
+            self.lang = "en"
         return self.lang
 
     def find_url_summary(self, url=None):
