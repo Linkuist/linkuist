@@ -83,7 +83,8 @@ def index_url(link, user_id, link_at, author_name, source_name):
         try:
             url_parser.extract_url_content()
         except Exception, exc:
-            logger.error("Can't extract url_contente from %s (%s)" % (url, type(exc)))
+            logger.warning("Can't extract url_content from %s" % url)
+            logger.exception(exc)
             return -1
 
 
