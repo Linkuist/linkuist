@@ -73,6 +73,9 @@ class UrlParser(object):
     def is_html_page(self):
         return 'html' in self.content_type
 
+    def is_image(self):
+        return 'image' in self.content_type
+
     def is_valid_url(self, url=None):
         if not url:
             url = self.url
@@ -212,12 +215,8 @@ class UrlParser(object):
         content = requests.get(url, headers=headers)
         self.content_type = content.headers.get('content-type')
         self.status_code = content.status_code
-        self.content = content.text
         self.url = self.url_morph(content.url)
         self.url = self.clean_url(self.url)
-        self.image = self.find_taller_image(self.content)
-        if self.image:
-            self.logger.info("found image : %s"%self.image)
         self.url_parse = urlparse(self.url)
 
         if url_parse.netloc in oembed.keys():
@@ -231,17 +230,19 @@ class UrlParser(object):
             self.tagstring = mod.get_tag()
             return
 
-
-
         if self.status_code >= 400:
             raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
 
-        elif "image" in self.content_type:
+        elif self.is_image():
             print "log: content type : image"
-            self.summary = """<img src="%s" />""" % self.url
-            self.title = self.url
+            self.title = os.path.basename(url_parse.path)
+            self.image = self.url
+            self.content = ""
+            self.summary = ""
 
-        elif "html" in self.content_type:
+        elif self.is_html_page():
+            self.content = content.text
+            self.image = self.find_taller_image(self.content)
             doc = Document(self.content)
             self.summary = doc.summary()
             try:
@@ -253,6 +254,10 @@ class UrlParser(object):
         else:
             self.summary = None
             self.title = os.path.basename(url_parse.path)
+
+        if self.image:
+            self.logger.info("found image : %s"%self.image)
+        self.logger.info("Content-Type: %s" % self.content_type)
 
     def extract_link_xpath(self, xpath):
         try:
@@ -313,7 +318,7 @@ class UrlParser(object):
         elif found_image and not found_image.startswith('http'):
             # this is a relative path to the image
             url_parse = urlparse(self.url)
-            found_image = "%s://%s%s%s" % (url_parse.scheme, url_parse.path,
-                    url_parse.netloc, found_image)
+            found_image = "%s://%s%s%s" % (url_parse.scheme, url_parse.netloc,
+                    url_parse.path, found_image)
 
-        return found_image
+            return found_image
