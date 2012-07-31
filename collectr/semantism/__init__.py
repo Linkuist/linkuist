@@ -13,7 +13,7 @@ sys.path.append('../../')
 os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
 
 # django
-from django.db.models import Q
+from django.db.models import Q, F
 
 # collectr
 from source.models import (Author, Source, Origin, LinkSum, Filter,

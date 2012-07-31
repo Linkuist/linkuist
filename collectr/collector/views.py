@@ -11,6 +11,8 @@ from django.shortcuts import redirect
 from redis import Redis
 from rq import use_connection, Queue
 
+from semantism import index_url
+
 links_queue = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
 
 @login_required
@@ -34,7 +36,7 @@ def secret_bookmark(request, username):
     except User.DoesNotExist:
         return HttpResponse(status=403)
 
-    links_queue.enqueue(url, url, user.id, datetime.now(), link_from, source)
+    links_queue.enqueue(index_url, url, user.id, datetime.now(), link_from, source)
 
     return HttpResponse(status=201)
 
