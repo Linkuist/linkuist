@@ -129,13 +129,12 @@ def index_url(link, user_id, link_at, author_name, source_name):
                     tag_m = Tag.objects.get(name=tag)
                 url_m.tags.add(tag_m)
 
-            url_m.raw_tags = url_parser.tagstring
+            tagstring = url_parser.tagstring or ""
+            url_m.raw_tags = tagstring
             url_m.save()
-        else:
-            tags = ""
 
         lsum = LinkSum(
-            tags=url_parser.tagstring, summary=url_parser.summary, url=url_m,
+            tags=url_parser.tagstring or "", summary=url_parser.summary, url=url_m,
             title=url_parser.title, link=url_parser.url, collection_id=default_collection.pk,
             read=False, recommanded=1, source=source,
             user_id=user_id,
