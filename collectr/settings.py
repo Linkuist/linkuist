@@ -87,7 +87,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'f%#u7s6cl75%-tch=o3u1jnqtu!76ps*1!iqh3#ioshre#sp@w'
+SECRET_KEY = ''
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -135,8 +135,8 @@ INSTALLED_APPS = (
     'webfront',
 )
 
-TWITTER_CONSUMER_KEY = 'EsceUi91emhQAtiWQBg'
-TWITTER_CONSUMER_SECRET = 'wfFB4l79lfBGJ8dilex6x4Bf2I2imwDXPiNnFcIBdRE'
+TWITTER_CONSUMER_KEY = ''
+TWITTER_CONSUMER_SECRET = ''
 
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.twitter.TwitterBackend',
