@@ -28,15 +28,15 @@ def search(request, template="webfront/search.html"):
     querystring = request.GET['query'].replace(' ', ' & ')
 
     links = LinkSum.objects.raw(
-        """SELECT "source_linksum"."id", "source_linksum"."tags", "source_linksum"."summary", "source_linksum"."title", "source_linksum"."link", "source_linksum"."url_id", "source_linksum"."origin_id", "source_linksum"."source_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id", "source_linksum"."author", "source_linksum"."author_id"
-           FROM source_linksum 
-           INNER JOIN source_url ON 
-              (source_linksum.url_id = source_url.id) 
-           AND 
+        """SELECT DISTINCT "source_linksum"."id", "source_linksum"."tags", "source_linksum"."summary", "source_linksum"."title", "source_linksum"."link", "source_linksum"."url_id", "source_linksum"."origin_id", "source_linksum"."source_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id"
+           FROM source_linksum
+           INNER JOIN source_url ON
+              (source_linksum.url_id = source_url.id)
+           AND
               to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
            ORDER BY "source_linksum"."inserted_at" DESC;
          """, [querystring])
-    
+
     data = {
         'links' : links,
         'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
@@ -227,3 +227,11 @@ def collection_user(request, user, source, template="webfront/collection.html"):
 
     return render(request, template, data)
 
+@login_required
+def ajax_hide_linksum(request, linksum_id):
+    if not request.is_ajax():
+        return HttpResponse(status_code=400)
+
+    link = get_object_or_404(LinkSum, pk=linksum_id, user_id=request.user.pk)
+    link.hidden = True
+    link.save()

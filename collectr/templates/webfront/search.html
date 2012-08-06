@@ -32,9 +32,17 @@
           {% endif %}
             
             </h3>
-            <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
-                <span class="label label-success">{{ link.author.name }}</span>
-            </a>
+            {% if not link.author_id %}
+            {% for author in link.authors.all %}
+                <a href="{% url webfront:collection_user author.name, author.source_id %}">
+                    <span class="label label-success">{{ author.name }}</span>
+                </a>
+            {% endfor %}
+            {% else %}
+                <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
+                    <span class="label label-success">{{ link.author.name }}</span>
+                </a>
+            {% endif %}
           <p> on {{ link.inserted_at }}</p>
           <p> {% for tag in link.get_tags %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
