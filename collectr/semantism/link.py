@@ -29,7 +29,7 @@ from nltk.tag.simplify import simplify_wsj_tag
 import requests
 import textcat
 
-from readability.readability import Document
+import webarticle2text
 
 # django
 from django.db.models import Q, F
@@ -63,10 +63,14 @@ class UrlParser(object):
         self.tagstring = None
         self.title = []
         self.image = None
-        self.summary = None
         self.url = url
         self.logger = logger
+        # full page content (pdf, html, whatever)
         self.content = None
+        # extracted text from the raw content
+        self.extracted_text = None
+        # extracted summary (mostly the 3 lines of the text)
+        self.summary = None
         self.status_code = None
         self.content_type = None
 
@@ -112,32 +116,20 @@ class UrlParser(object):
             self.lang = "en"
         return self.lang
 
-    def find_url_summary(self, url=None):
+    def extract_html_content(self, content=None):
+        """Extract the most interesting content from the html"""
+        if not content:
+            content = self.content
+        content = webarticle2text.extractFromHTML(content)
+        return content
+
+    def extract_content_summary(self, content):
         """resume the content of the link"""
-        if not url:
-            url = self.url
-
-        article = self.summary[:]
-
-        if 'html' in self.content_type:
-            summary = ""
-            try:
-                tree = LH.fromstring(article)
-                xpath_l = tree.xpath('//p/text()')
-                summary = " ".join(xpath_l)
-            except Exception, exc:
-                print traceback.print_exc()
-                logger.error("no paragraph found in %s" % (url,))
-                summary = ""
-            if summary:
-                summary = summary.split('.')
-                summary = filter(len, summary)
-                summary = ". ".join(summary[:3])
-                summary += "."
-                if len(summary) > 600:
-                    summary[:500]
-            self.summary = summary
-        self.logger.info("summary : %s" % self.summary)
+        summary = content.split('.')
+        summary = filter(len, summary)
+        summary = ". ".join(summary[:3])
+        summary += "."
+        self.summary = summary
         return self.summary
 
     def find_collection(self, linksum, filtrs):
@@ -179,7 +171,7 @@ class UrlParser(object):
     #                spearman_correlation(
     #                ranks_from_scores(cf.score_ngrams(scorer)),
     #                ranks_from_scores(cf.score_ngrams(compare_scorer))))
-        self.tags = [' '.join(tup) for tup in cf.nbest(scorer, 15)]
+        self.tags = [u' '.join(tup) for tup in cf.nbest(scorer, 15)]
         punctuation = set(string.punctuation)
         tags = []
 
@@ -242,14 +234,19 @@ class UrlParser(object):
 
         elif self.is_html_page():
             self.content = content.text
-            self.image = self.find_taller_image(self.content)
-            doc = Document(self.content)
-            self.summary = doc.summary()
-            try:
-                self.title = doc.short_title()
-            except AttributeError:
-                self.title = u"No title"
-
+            if not self.content or not len(self.content):
+                self.summary = None
+                self.content = None
+            else:
+                # the real interesting part of the page
+                self.extracted_text  = self.extract_html_content(self.content)
+                self.find_url_language(self.extracted_text)
+                #self.logger.info("Page content : %s" % self.extracted_text)
+                self.title = self.find_title(self.content)
+                self.logger.info("Page title : %s" % self.title)
+                self.image = self.find_taller_image(self.content)
+                self.summary = self.extract_content_summary(self.extracted_text)
+                self.logger.info("Page summary : %s" % self.summary)
 
         else:
             self.summary = None
@@ -257,9 +254,10 @@ class UrlParser(object):
 
         if self.image:
             self.logger.info("found image : %s"%self.image)
-        self.logger.info("Content-Type: %s" % self.content_type)
 
     def extract_link_xpath(self, xpath):
+        if not self.summary:
+            return self.summary
         try:
             doc = LH.fromstring(self.content)
             result = doc.xpath(xpath)
@@ -273,20 +271,29 @@ class UrlParser(object):
             self.summary = LH.tostring(result)
             self.logger.info("extracted xpath content: %s" % self.summary)
         except Exception, exc:
-            import traceback
-            print traceback.print_exc()
-            print "extract_link_xpath exc:", exc
-            return ""
+            logger.exception(exc)
+            self.summary = None
+            return None
         return self.summary
 
     def as_linksum(self):
         """Return a linksum objet"""
         pass
 
+    def find_encoding(self):
+        return self.content
+
     def tokenise(self, raw_text, callback=None):
         raw = nltk.clean_html(raw_text)
         tokens = nltk.wordpunct_tokenize(raw)
         return tokens
+
+    def find_title(self, html):
+        tree = LH.fromstring(html)
+        title = tree.find(".//title")
+        if title is not None:
+            return title.text
+        return None
 
     def find_taller_image(self, page_content):
         best_perimeter = 0
@@ -318,7 +325,7 @@ class UrlParser(object):
         elif found_image and not found_image.startswith('http'):
             # this is a relative path to the image
             url_parse = urlparse(self.url)
-            found_image = "%s://%s%s%s" % (url_parse.scheme, url_parse.netloc,
+            found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
                     url_parse.path, found_image)
 
-            return found_image
+        return found_image
