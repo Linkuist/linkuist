@@ -20,9 +20,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         scheduler = Scheduler('rss_collector', connection=Redis('127.0.0.1', port=6379))
-        scheduler.enqueue(
+        scheduler.enqueue_periodic(
             datetime.datetime.now(),
-            func=fetch_rss,
-            interval=360,
+            600,
+            2000,
+            fetch_rss,
         )
 
