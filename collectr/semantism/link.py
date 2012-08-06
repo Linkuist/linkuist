@@ -271,7 +271,7 @@ class UrlParser(object):
             self.summary = LH.tostring(result)
             self.logger.info("extracted xpath content: %s" % self.summary)
         except Exception, exc:
-            logger.exception(exc)
+            self.logger.exception(exc)
             self.summary = None
             return None
         return self.summary
