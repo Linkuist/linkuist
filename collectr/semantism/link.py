@@ -220,7 +220,7 @@ class UrlParser(object):
         self.url_parse = urlparse(self.url)
 
         if url_parse.netloc in oembed.keys():
-            print "found oembed"
+            self.logger.debug("found oembed")
             mod = oembed[url_parse.netloc]
             self.content = mod.get_widget(url)
             self.summary = self.content
@@ -234,7 +234,7 @@ class UrlParser(object):
             raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
 
         elif self.is_image():
-            print "log: content type : image"
+            self.logger.debug("log: content type : image")
             self.title = os.path.basename(url_parse.path)
             self.image = self.url
             self.content = ""
@@ -292,7 +292,7 @@ class UrlParser(object):
         best_perimeter = 0
         found_image = None
         if not page_content or len(page_content) <= 0:
-            self.logger.info("Page has no content")
+            self.logger.warning("Page has no content")
             return found_image
         tree = LH.fromstring(page_content)
         image_list = tree.xpath("//img")

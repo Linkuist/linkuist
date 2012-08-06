@@ -17,4 +17,3 @@ for module_path in os.listdir(module_dir):
         for url in baseurl:
             oembed[url] = mod
 
-print oembed

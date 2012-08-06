@@ -75,7 +75,8 @@ def index_url(link, user_id, link_at, author_name, source_name):
 
     urls = find_urls(link)
     if not urls:
-        logger.info("status invalid and ignored")
+        #logger.info("status invalid and ignored")
+        pass
         return
     for url in urls:
         url_parser = UrlParser(logger, url)
