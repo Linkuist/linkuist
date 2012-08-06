@@ -94,13 +94,15 @@ def index_url(link, user_id, link_at, author_name, source_name):
         except Url.DoesNotExist:
             uv = UrlViews.objects.create(count=0)
             try:
+                summary = url_parser.summary or ""
                 url_m = Url.objects.create(link=url_parser.url, views=uv,
-                                           content=url_parser.summary,
+                                           content=summary,
                                            image=url_parser.image)
 
             except Exception, exc:
-                url_m = Url.objects.get(link=url_parser.url)
-
+                logger.error("Can't find or create an Url object")
+                logger.exception(exc)
+                return -1
 
         try:
             links_numb = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
