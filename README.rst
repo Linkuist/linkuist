@@ -46,3 +46,9 @@ As it is a django project, you need to edit your collectr/settings.py to add you
 You should probably add your own TWITTER_CONSUMER_KEY and your TWITTER_CONSUMER_SECRET informations.
 
 Oh, and your own SECRET_KEY  too \o/
+
+
+Notable projects
+----------------
+
+If you're looking for a RSS reader, take a look at _Feedhq: https://github.com/feedhq/feedhq/blob/master/README.rst
