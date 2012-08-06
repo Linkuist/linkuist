@@ -111,18 +111,13 @@ def index_url(link, user_id, link_at, author_name, source_name):
             links_numb.authors.add(author)
             logger.info("url already in database")
             continue
-            # link does not exist for now
-            pass
 
         except LinkSum.DoesNotExist:
-            # link does not exist for now
+            # link does not exist for now and will be created later
             pass
 
+        tagstring = ""
         if url_parser.is_html_page():
-            url_parser.find_url_summary()
-
-            url_parser.find_url_language()
-
             tags = url_parser.find_tags()
 
             for tag in tags:
@@ -138,11 +133,14 @@ def index_url(link, user_id, link_at, author_name, source_name):
             url_m.save()
 
         lsum = LinkSum(
-            tags=url_parser.tagstring or "", summary=url_parser.summary, url=url_m,
+            tags=tagstring, summary=url_parser.summary, url=url_m,
             title=url_parser.title, link=url_parser.url, collection_id=default_collection.pk,
             read=False, recommanded=1, source=source,
             user_id=user_id,
         )
+
+        if isinstance(lsum.summary, basestring) and len(lsum.summary) == 0:
+            lsum.summary = ""
 
         if url_parser.image and not url_m.image:
             url_m.image = url_parser.image
@@ -162,8 +160,11 @@ def index_url(link, user_id, link_at, author_name, source_name):
             logger.info("Link not saved, filtered")
             return
         try:
+            if isinstance(lsum.summary, unicode) and len(lsum.summary) == 0:
+                lsum.summary = ""
+                lsum.tags = ""
             lsum.save()
+            lsum.authors.add(author)
         except Exception, exc:
-            print exc
-            lsum = LinkSum.objects.filter(url__pk=url_m.pk, user__id=user_id).update(recommanded=F('recommanded') + 1)
-        lsum.authors.add(author)
+            logger.exception(exc)
+        logger.info("Added new link for user %s" % user_id)
