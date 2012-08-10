@@ -208,10 +208,10 @@ class UrlParser(object):
             user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
             headers['User-Agent'] = user_agent
 
-        content = requests.get(url, headers=headers)
-        self.content_type = content.headers.get('content-type')
-        self.status_code = content.status_code
-        self.url = self.url_morph(content.url)
+        response = requests.get(url, headers=headers)
+        self.content_type = response.headers.get('content-type')
+        self.status_code = response.status_code
+        self.url = self.url_morph(response.url)
         self.url = self.clean_url(self.url)
         self.url_parse = urlparse(self.url)
 
@@ -227,7 +227,7 @@ class UrlParser(object):
             return
 
         if self.status_code >= 400:
-            raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, content.status_code))
+            raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, response.status_code))
 
         elif self.is_image():
             self.logger.debug("log: content type : image")
@@ -237,7 +237,8 @@ class UrlParser(object):
             self.summary = ""
 
         elif self.is_html_page():
-            self.content = content.text
+            self.content = response.text
+            print type(self.content)
             if not self.content or not len(self.content):
                 self.summary = None
                 self.content = None
@@ -266,6 +267,9 @@ class UrlParser(object):
             doc = LH.fromstring(self.content)
             result = doc.xpath(xpath)
             if isinstance(result, (list, tuple)):
+                print result
+                if not len(result):
+                    return
                 result = result[0]
             for attr in ('style', 'border', 'height', 'width'):
                 try:
