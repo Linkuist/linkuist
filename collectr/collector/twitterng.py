@@ -28,6 +28,7 @@ setup_environ(settings)
 import tweepy
 
 # django
+from django.conf import settings
 from django.contrib.auth.models import User
 from social_auth.models import UserSocialAuth
 
@@ -39,8 +40,9 @@ from semantism import index_url
 
 logger = logging.getLogger('tweet_collector')
 
-CONSUMER_KEY = 'EsceUi91emhQAtiWQBg'
-CONSUMER_SECRET = 'wfFB4l79lfBGJ8dilex6x4Bf2I2imwDXPiNnFcIBdRE'
+
+CONSUMER_KEY = settings.TWITTER_CONSUMER_KEY
+CONSUMER_SECRET = settings.TWITTER_CONSUMER_SECRET
 
 
 class TwitterListener(tweepy.streaming.StreamListener):
@@ -48,6 +50,9 @@ class TwitterListener(tweepy.streaming.StreamListener):
     def __init__(self, *args, **kwargs):
         super(TwitterListener, self).__init__(*args, **kwargs)
         self.q = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
+
+    def on_error(self, status_code):
+        logger.error("Twitter error with status code %s", status_code)
 
     def on_status(self, status):
         if hasattr(status, 'entities') and 'urls' in status.entities:
