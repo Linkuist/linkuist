@@ -23,28 +23,38 @@
 
       <div class="row-fluid">
 {% for link in links %}
-        <div class="span4">
+        <div class="span6">
             <h3>{{ link.title }}
-          {% if link.read %}
-          <i class="icon-search"></i>
-          {% else %}
-          <i class="icon-envelope"></i>
-          {% endif %}
-            
+              {% if link.read %}
+              <i class="icon-search"></i>
+              {% else %}
+              <i class="icon-envelope"></i>
+              {% endif %}
             </h3>
-            <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
-                <span class="label label-success">{{ link.author.name }}</span>
-            </a>
-            <p> on {{ link.inserted_at }}</p><span>{{ link.recommanded }}</span>
+            {% if not link.author_id %}
+            {% for author in link.authors.all %}
+                <a href="{% url webfront:collection_user author.name, author.source_id %}">
+                    <span class="label label-success">{{ author.name }}</span>
+                </a>
+            {% endfor %}
+            {% else %}
+                <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
+                    <span class="label label-success">{{ link.author.name }}</span>
+                </a>
+            {% endif %}
+          <p> on {{ link.inserted_at }}</p>
           <p> {% for tag in link.get_tags %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
+            {% if link.url.image %}
+            <img src="{{ link.url.image }}" />
+            {% endif %}
           {% if not link.summary == "None" %}
           <p>{{ link.summary|safe }}</p>
           {% endif %}
           <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
-    {% if forloop.counter|divisibleby:"3" %}
+    {% if forloop.counter|divisibleby:"2" %}
     </div><!--/row-->
     <div class="row-fluid">
     {% endif %}
