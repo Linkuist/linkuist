@@ -247,7 +247,9 @@ class UrlParser(object):
                 self.extracted_text  = self.extract_html_content(self.content)
                 self.find_url_language(self.extracted_text)
                 #self.logger.info("Page content : %s" % self.extracted_text)
-                self.title = self.find_title(self.content)
+
+                # seems lxml don't like unicode :(
+                self.title = self.find_title(response.text)
                 self.logger.info("Page title : %s" % self.title)
                 self.image = self.find_taller_image(self.content)
                 self.summary = self.extract_content_summary(self.extracted_text)
@@ -333,7 +335,12 @@ class UrlParser(object):
         elif found_image and not found_image.startswith('http'):
             # this is a relative path to the image
             url_parse = urlparse(self.url)
-            found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
-                    url_parse.path, found_image)
+            if not self.url.endswith('/'):
+                path = "/".join(url_parse.path.split("/")[:-1]) + "/"
+                found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
+                        path, found_image)
+            else:
+                found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
+                        url_parse.path, found_image)
 
         return found_image
