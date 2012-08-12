@@ -36,7 +36,7 @@ from rq import use_connection, Queue
 
 def fetch_rss():
     rss_feeds = Rss.objects.all()
-    q = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
+    q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
     for rss_feed in rss_feeds:
         feed = feedparser.parse(rss_feed.link)

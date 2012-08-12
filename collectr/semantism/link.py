@@ -238,7 +238,6 @@ class UrlParser(object):
 
         elif self.is_html_page():
             self.content = response.text
-            print type(self.content)
             if not self.content or not len(self.content):
                 self.summary = None
                 self.content = None
@@ -249,7 +248,7 @@ class UrlParser(object):
                 #self.logger.info("Page content : %s" % self.extracted_text)
 
                 # seems lxml don't like unicode :(
-                self.title = self.find_title(response.text)
+                self.title = self.find_title(response.content)
                 self.logger.info("Page title : %s" % self.title)
                 self.image = self.find_taller_image(self.content)
                 self.summary = self.extract_content_summary(self.extracted_text)
