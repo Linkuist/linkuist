@@ -30,7 +30,6 @@ The project requires a lots of dependancies:
   * nltk in version 2.0.1
   * oauth2 in version 1.5.211
   * oauthlib in version 0.1.3
-  * pylibtextcat in version 0.2
   * redis in version 2.4.13
   * requests in version 0.13.1
   * rq in version 0.3.0

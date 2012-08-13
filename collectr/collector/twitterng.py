@@ -49,7 +49,7 @@ class TwitterListener(tweepy.streaming.StreamListener):
 
     def __init__(self, *args, **kwargs):
         super(TwitterListener, self).__init__(*args, **kwargs)
-        self.q = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
+        self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
     def on_error(self, status_code):
         logger.error("Twitter error with status code %s", status_code)

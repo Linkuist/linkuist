@@ -18,7 +18,7 @@ from rq import use_connection, Queue
 
 class Command(BaseCommand):
     args = '<url> <user_id> <author name> <source>'
-    help = 'insert an url in tweet_collector queue'
+    help = 'insert an url in link_indexing queue'
     option_list = BaseCommand.option_list + (
         make_option('--sync',
             action='store_true',
@@ -33,6 +33,6 @@ class Command(BaseCommand):
         if 'sync' in kwargs:
             index_url(url, user_id, datetime.datetime.now(), author_name, source)
         else:
-            self.q = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
+            self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
             self.q.enqueue(index_url, url, user_id, datetime.datetime.now(), author_name, source)
 

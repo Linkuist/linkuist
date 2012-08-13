@@ -13,7 +13,7 @@ from rq import use_connection, Queue
 
 from semantism import index_url
 
-links_queue = Queue('tweet_collector', connection=Redis('127.0.0.1', port=6379))
+links_queue = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
 @login_required
 def bookmark(request, template_name="collector/bookmark.html"):
