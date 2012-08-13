@@ -27,7 +27,6 @@ from nltk.tag.simplify import simplify_wsj_tag
 
 # 3rd party
 import requests
-import textcat
 
 import webarticle2text
 
@@ -41,6 +40,8 @@ except Exception, exc:
     oembed = {}
 from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
                                   UrlExtractException)
+
+from semantism.language import LangClassifier
 
 from source.models import (Author, Source, Origin, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
@@ -58,7 +59,6 @@ class UrlParser(object):
     """Parse our url"""
 
     def __init__(self, logger, url):
-        self.lang_classifier = textcat.TextCat("/home/benoit/projs/collectr/collectr/fpdb.conf", "/usr/share/libtextcat/LM")
         self.tags = []
         self.tagstring = None
         self.title = []
@@ -73,6 +73,7 @@ class UrlParser(object):
         self.summary = None
         self.status_code = None
         self.content_type = None
+        self.lang_classifier = LangClassifier()
 
     def is_html_page(self):
         return 'html' in self.content_type
@@ -103,20 +104,22 @@ class UrlParser(object):
 
     def find_url_language(self, summary=None):
         """Guess the content's language"""
-        if not summary and self.summary:
+        if not summary or not len(summary):
+            if not self.summary or not len(summary):
+                print "falling back"
+                self.logger.warning("Can't find document lang, fallback to english")
+                self.lang = "en"
+                return self.lang
             summary = self.summary
-        else:
-            self.logger.warning("Can't find document lang, fallback to english")
-            self.lang = "en"
-            return
 
         raw_text = summary[:]
         try:
-            lang = self.lang_classifier.classify(raw_text)
-            self.lang = lang[0].split("--")[0]
+            lang = self.lang_classifier.find_language(raw_text)
+            self.lang = lang[:2]
             self.logger.info("found lang : %s" % self.lang)
         except Exception, exc:
             self.logger.warning("Can't find document lang, fallback to english")
+            self.logger.exception(exc)
             self.lang = "en"
         return self.lang
 
@@ -131,7 +134,7 @@ class UrlParser(object):
         """resume the content of the link"""
         summary = content.split('.')
         summary = filter(len, summary)
-        summary = ". ".join(summary[:3])
+        summary = " ".join(summary[:10])
         summary += "."
         self.summary = summary
         return self.summary
