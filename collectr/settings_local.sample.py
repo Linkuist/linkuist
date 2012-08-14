@@ -8,8 +8,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'collectr',
         'USER': 'collectr',
-        'PASSWORD': '',
-        'HOST': '',
+        'PASSWORD': 'collectr',
+        'HOST': 'localhost',
         'PORT': '',
     }
 }
