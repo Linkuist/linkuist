@@ -90,7 +90,9 @@ Execute migrations::
 
 Run the server::
 
-    python manage.py runserver
+    python manage.py runserver [::]:8000
+
+In your browser, go to: http://localhost:8001. 
 
 Enjoy.
 
