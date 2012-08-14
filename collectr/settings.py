@@ -16,16 +16,16 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': '',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': '',
+#        'USER': '',
+#        'PASSWORD': '',
+#        'HOST': '',
+#        'PORT': '',
+#    }
+#}
 
 TIME_ZONE = 'Europe/Paris'
 LANGUAGE_CODE = 'en-us'
@@ -74,15 +74,17 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    
     # External Django apps
     'django_extensions',
     'south',
     'social_auth',
+    
     # Project apps
     'collector',
     'source',
     'link_tracking',
-    'semantism',
+    #'semantism',
     'webfront',
 )
 
