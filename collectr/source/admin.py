@@ -5,7 +5,7 @@
 
 # admin
 from django.contrib import admin
-
+from django.contrib import sites
 # local
 from source.models import (Source, LinkSum, Collection,
                            Filter, Tag, Url, UrlViews,
@@ -43,3 +43,5 @@ admin.site.register(Url, UrlAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(UrlViews, UrlViewsAdmin)
 admin.site.register(Rss, RssAdmin)
+
+admin.site.unregister(sites.models.Site)
