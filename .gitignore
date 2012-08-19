@@ -1,0 +1,5 @@
+.DS_Store
+.vagrant
+settings_local.py
+*.pyc
+*.db

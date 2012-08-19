@@ -11,7 +11,7 @@ from django.shortcuts import redirect
 from redis import Redis
 from rq import use_connection, Queue
 
-from semantism import index_url
+from semantism.process import index_url
 
 links_queue = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
