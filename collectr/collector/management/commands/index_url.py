@@ -9,7 +9,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 
 # collectr
-from semantism import index_url
+from semantism.process import index_url
 
 # rq
 from redis import Redis

@@ -27,7 +27,7 @@ from django.contrib.auth.models import User
 
 # semantism
 from source.models import Rss
-from semantism import index_url
+from semantism.process import index_url
 
 # rq
 from redis import Redis

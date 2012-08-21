@@ -36,7 +36,7 @@ from social_auth.models import UserSocialAuth
 from redis import Redis
 from rq import use_connection, Queue
 
-from semantism import index_url
+from semantism.process import index_url
 
 logger = logging.getLogger('tweet_collector')
 
