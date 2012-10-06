@@ -95,9 +95,11 @@ class UrlParser(object):
 
         u = urlparse.urlparse(url)
         qs = cgi.parse_qs(u[4])
-        qs = dict((k, v) for k, v in qs.iteritems() if not k.startswith('utm_'))
-        u = u._replace(query=urllib.urlencode(qs, True))
-        url = urlparse.urlunparse(u)
+        for unwanted_qs in ('utm_', 'xtor'):
+            qs = dict((k, v) for k, v in qs.iteritems() if not
+                    k.startswith(unwanted_qs))
+            u = u._replace(query=urllib.urlencode(qs, True))
+            url = urlparse.urlunparse(u)
         url = url.replace('#!', '?_escaped_fragment_=')
         self.logger.info("cleaned url : %s" % url)
         return url
@@ -271,7 +273,6 @@ class UrlParser(object):
             doc = LH.fromstring(self.content)
             result = doc.xpath(xpath)
             if isinstance(result, (list, tuple)):
-                print result
                 if not len(result):
                     return
                 result = result[0]
