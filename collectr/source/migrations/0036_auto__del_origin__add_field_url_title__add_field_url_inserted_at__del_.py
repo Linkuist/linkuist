@@ -16,6 +16,11 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.TextField')(default=''),
                       keep_default=False)
 
+        # Adding field 'Url.summary'
+        db.add_column('source_url', 'summary',
+                      self.gf('django.db.models.fields.TextField')(null=True),
+                      keep_default=False)
+
         # Adding field 'Url.inserted_at'
         db.add_column('source_url', 'inserted_at',
                       self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now),
@@ -27,6 +32,9 @@ class Migration(SchemaMigration):
         # Deleting field 'LinkSum.tags'
         db.delete_column('source_linksum', 'tags')
 
+        # Deleting field 'LinkSum.summary'
+        db.delete_column('source_linksum', 'summary')
+
         # Deleting field 'LinkSum.source'
         db.delete_column('source_linksum', 'source_id')
 
@@ -36,6 +44,14 @@ class Migration(SchemaMigration):
         # Deleting field 'LinkSum.title'
         db.delete_column('source_linksum', 'title')
 
+        # Adding M2M table for field sources on 'LinkSum'
+        db.create_table('source_linksum_sources', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('linksum', models.ForeignKey(orm['source.linksum'], null=False)),
+            ('source', models.ForeignKey(orm['source.source'], null=False))
+        ))
+        db.create_unique('source_linksum_sources', ['linksum_id', 'source_id'])
+
         # Adding M2M table for field tags on 'LinkSum'
         db.create_table('source_linksum_tags', (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
@@ -43,14 +59,6 @@ class Migration(SchemaMigration):
             ('tag', models.ForeignKey(orm['source.tag'], null=False))
         ))
         db.create_unique('source_linksum_tags', ['linksum_id', 'tag_id'])
-
-        # Adding M2M table for field source on 'LinkSum'
-        db.create_table('source_linksum_source', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('linksum', models.ForeignKey(orm['source.linksum'], null=False)),
-            ('source', models.ForeignKey(orm['source.source'], null=False))
-        ))
-        db.create_unique('source_linksum_source', ['linksum_id', 'source_id'])
 
 
     def backwards(self, orm):
@@ -64,6 +72,9 @@ class Migration(SchemaMigration):
         # Deleting field 'Url.title'
         db.delete_column('source_url', 'title')
 
+        # Deleting field 'Url.summary'
+        db.delete_column('source_url', 'summary')
+
         # Deleting field 'Url.inserted_at'
         db.delete_column('source_url', 'inserted_at')
 
@@ -75,6 +86,11 @@ class Migration(SchemaMigration):
         # Adding field 'LinkSum.tags'
         db.add_column('source_linksum', 'tags',
                       self.gf('django.db.models.fields.TextField')(default=''),
+                      keep_default=False)
+
+        # Adding field 'LinkSum.summary'
+        db.add_column('source_linksum', 'summary',
+                      self.gf('django.db.models.fields.TextField')(null=True),
                       keep_default=False)
 
         # Adding field 'LinkSum.source'
@@ -92,11 +108,11 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.TextField')(default=''),
                       keep_default=False)
 
+        # Removing M2M table for field sources on 'LinkSum'
+        db.delete_table('source_linksum_sources')
+
         # Removing M2M table for field tags on 'LinkSum'
         db.delete_table('source_linksum_tags')
-
-        # Removing M2M table for field source on 'LinkSum'
-        db.delete_table('source_linksum_source')
 
 
     models = {
@@ -167,8 +183,7 @@ class Migration(SchemaMigration):
             'inserted_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'read': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'recommanded': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
-            'source': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['source.Source']", 'null': 'True', 'symmetrical': 'False'}),
-            'summary': ('django.db.models.fields.TextField', [], {'null': 'True'}),
+            'sources': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['source.Source']", 'null': 'True', 'symmetrical': 'False'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['source.Tag']", 'symmetrical': 'False'}),
             'url': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['source.Url']", 'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
@@ -200,6 +215,7 @@ class Migration(SchemaMigration):
             'inserted_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'link': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
             'raw_tags': ('django.db.models.fields.TextField', [], {}),
+            'summary': ('django.db.models.fields.TextField', [], {'null': 'True'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['source.Tag']", 'symmetrical': 'False'}),
             'title': ('django.db.models.fields.TextField', [], {}),
             'views': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['source.UrlViews']"})

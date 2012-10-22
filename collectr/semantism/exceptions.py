@@ -3,14 +3,19 @@
     Base exception at collector.
 
 """
-class BaseCollectorException(Exception):
+
+
+class BaseIndexException(Exception):
     pass
 
-class DeleteLinkException(BaseCollectorException):
+class DeleteLinkException(BaseIndexException):
     pass
 
-class UnsupportedContentException(BaseCollectorException):
+class UnsupportedContentException(BaseIndexException):
     pass
 
-class UrlExtractException(BaseCollectorException):
+class UrlExtractException(BaseIndexException):
+    pass
+
+class UrlCreationException(BaseIndexException):
     pass

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # python
 from urlparse import urlparse
 from datetime import datetime
@@ -75,9 +76,19 @@ class Url(models.Model):
     views = models.ForeignKey(UrlViews)
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
+    summary = models.TextField(null=True)
     content = models.TextField()
     image = models.TextField(null=True, blank=True)
     inserted_at = models.DateTimeField(default=timezone.now)
+
+    def create_tags(self, tags):
+        """Sync’ tags & raw_tags"""
+        for tag in tags:
+            tag = tag.title()
+            tag_instance, created = Tag.objects.get_or_create(name=tag)
+            self.tags.add(tag_instance)
+
+        self.raw_tags = u";".join(tags)
 
     def __unicode__(self):
         return self.link
@@ -92,15 +103,14 @@ class LinkSum(models.Model):
     It's the user's part of the link, describing who posted the link,
     in which collection the link stays, it's origin ...
     """
-    tags = models.ManyToManyField(Tag)
-    summary = models.TextField(null=True)
     url = models.ForeignKey(Url, null=True, blank=True)
     read = models.BooleanField(default=False)
     recommanded = models.IntegerField(default=1)
     collection = models.ForeignKey(Collection, null=True)
     inserted_at = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User)
-    source = models.ManyToManyField(Source, null=True)
+    sources = models.ManyToManyField(Source, null=True)
+    tags = models.ManyToManyField(Tag)
     authors = models.ManyToManyField(Author, related_name="authors")
     hidden = models.BooleanField(default=False)
 

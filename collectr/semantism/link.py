@@ -43,7 +43,7 @@ from semantism.exceptions import (DeleteLinkException, UnsupportedContentExcepti
 
 from semantism.language import LangClassifier
 
-from source.models import (Author, Source, Origin, LinkSum, Filter,
+from source.models import (Author, Source, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
 
 

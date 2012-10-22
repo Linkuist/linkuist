@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 """
     Index an URL into collectr
+
 """
+
 
 # python
 import logging
@@ -16,7 +19,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
 from django.db.models import Q, F
 
 # collectr
-from source.models import (Author, Source, Origin, LinkSum, Filter,
+from source.models import (Author, Source, LinkSum, Filter,
                            Collection, Url, UrlViews, Tag)
 
 # semantism
@@ -25,8 +28,7 @@ try:
 except Exception, exc:
     oembed = {}
 from semantism.link import UrlParser
-from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
-                                  UrlExtractException)
+from semantism import exceptions as index_exc
 
 
 
@@ -58,93 +60,90 @@ def find_urls(content):
     urls = [d['url'] for d in content.entities['urls']]
     return urls
 
+def create_url(url_parser):
+    url = None
+    try:
+        url = Url.objects.get(link=url_parser.url)
+        logger.info(u"Url already exists in database")
+        return url
+    except Url.DoesNotExist:
+        pass
+
+    uv = UrlViews.objects.create(count=0)
+    try:
+        summary = url_parser.summary or ""
+        url = Url.objects.create(link=url_parser.url, views=uv,
+            summary=summary, content=url_parser.content, image=url_parser.image)
+
+    except Exception, exc:
+        raise index_exc.UrlCreationException(u"Can't create the Url object", exc_info=True)
+
+    if url_parser.image:
+        url.image = url_parser.image
+
+    if url_parser.is_html_page():
+        tags = url_parser.find_tags()
+        url.create_tags(tags)
+
+    url.save()
+
+    return url
+
 def index_url(link, user_id, link_at, author_name, source_name):
+    """Entry point to store our link & linksum into the database"""
     user_id = int(user_id)
-    filters = Filter.objects.filter(Q(user__pk=user_id)|Q(user__isnull=True))
+
+    urls = find_urls(link)
+    if not urls:
+        logger.info(u"No link provided")
+        return
+
+    #loads our filters
+    filters = Filter.objects.filter(Q(user__pk=user_id) | Q(user__isnull=True))
 
     try:
         source = sources[source_name.lower()]
     except KeyError:
-        logger.info("source %s unknown" % source_name)
+        logger.info(u"source %s unknown" % source_name)
         return -1
     try:
-        author, created = Author.objects.get_or_create(name=author_name, source=source)
-    except Exception, exc:
-        print exc
         author = Author.objects.get(name=author_name)
-
-    urls = find_urls(link)
-    if not urls:
-        #logger.info("status invalid and ignored")
-        pass
-        return
+    except Author.DoesNotExist:
+        logger.info(u"Created author '{0}'".format(author_name))
+        author, created = Author.objects.get_or_create(name=author_name, source=source)
+        
     for url in urls:
         url_parser = UrlParser(logger, url)
+
 
         try:
             url_parser.extract_url_content()
         except Exception, exc:
-            logger.warning("Can't extract url_content from %s" % url)
+            logger.warning(u"Can't extract url_content from %s" % url)
             logger.exception(exc)
-            return -1
+            continue
+
+        try:
+            url_instance = create_url(url_parser)
+        except index_exc.UrlCreationException:
+            logger.warning(u"can't create url for link {0}".format(url), exc_info=True)
+            continue
 
 
         try:
-            url_m = Url.objects.get(link=url_parser.url)
-        except Url.DoesNotExist:
-            uv = UrlViews.objects.create(count=0)
-            try:
-                summary = url_parser.summary or ""
-                url_m = Url.objects.create(link=url_parser.url, views=uv,
-                                           content=summary,
-                                           image=url_parser.image)
-
-            except Exception, exc:
-                logger.error("Can't find or create an Url object")
-                logger.exception(exc)
-                return -1
-
-        try:
-            links_numb = LinkSum.objects.get(url__pk=url_m.pk, user__id=user_id)
+            links_numb = LinkSum.objects.get(url=url_instance, user__id=user_id)
             links_numb.recommanded += 1
             links_numb.save()
             links_numb.authors.add(author)
-            logger.info("url already in database")
+            logger.info(u"linksum already in database")
             continue
 
         except LinkSum.DoesNotExist:
-            # link does not exist for now and will be created later
             pass
 
-        tagstring = ""
-        if url_parser.is_html_page():
-            tags = url_parser.find_tags()
 
-            for tag in tags:
-                tag = tag.title()
-                try:
-                    tag_m, created = Tag.objects.get_or_create(name=tag)
-                except Exception, e:
-                    tag_m = Tag.objects.get(name=tag)
-                url_m.tags.add(tag_m)
-
-            tagstring = url_parser.tagstring or ""
-            url_m.raw_tags = tagstring
-            url_m.save()
-
-        lsum = LinkSum(
-            tags=tagstring, summary=url_parser.summary, url=url_m,
-            title=url_parser.title, link=url_parser.url, collection_id=default_collection.pk,
-            read=False, recommanded=1, source=source,
-            user_id=user_id,
-        )
-
-        if isinstance(lsum.summary, basestring) and len(lsum.summary) == 0:
-            lsum.summary = ""
-
-        if url_parser.image and not url_m.image:
-            url_m.image = url_parser.image
-            url_m.save()
+        lsum = LinkSum(url=url_instance, collection_id=default_collection.pk,
+            read=False, user_id=user_id)
 
         try:
             filtr = url_parser.find_collection(lsum, filters)
@@ -154,17 +153,19 @@ def index_url(link, user_id, link_at, author_name, source_name):
             if filtr and filtr.xpath is not None:
                 lsum.summary = url_parser.extract_link_xpath(filtr.xpath)
                 lsum.collection_id = filtr.to_collection_id
-                logger.info("new collection : %d" % filtr.to_collection_id)
+                logger.info(u"new collection : {0}".format(filtr.to_collection_id))
 
-        except DeleteLinkException:
-            logger.info("Link not saved, filtered")
-            return
+        except index_exc.DeleteLinkException:
+            logger.info(u"Link not saved, filtered")
+            continue
+
         try:
-            if isinstance(lsum.summary, unicode) and len(lsum.summary) == 0:
-                lsum.summary = ""
-                lsum.tags = ""
             lsum.save()
             lsum.authors.add(author)
+            lsum.sources.add(source)
+            for tags in url_instance.tags.all():
+                lsum.tags.add(tags)
+
         except Exception, exc:
             logger.exception(exc)
-        logger.info("Added new link for user %s" % user_id)
+        logger.info(u"Added new link for user {0}".format(user_id))
