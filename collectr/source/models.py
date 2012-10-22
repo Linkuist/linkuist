@@ -5,6 +5,7 @@ from datetime import datetime
 # django
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # app
 
@@ -20,6 +21,7 @@ FILTERFIELDCHOICES = (
 )
 
 class Collection(models.Model):
+    """A collection. Mostly the theme"""
     user = models.ForeignKey(User, null=True, blank=True)
     name = models.CharField(max_length=128)
 
@@ -27,6 +29,7 @@ class Collection(models.Model):
         return "%s (%d)" % (self.name, self.user_id or 0)
 
 class Filter(models.Model):
+    """A filter for links. to delete them, or move them to a collection"""
     user = models.ForeignKey(User, null=True, blank=True)
     regexp = models.CharField(max_length=64)
     field = models.CharField(choices=FILTERFIELDCHOICES, max_length=32)
@@ -40,16 +43,15 @@ class Filter(models.Model):
         return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id or 0)
 
 class Source(models.Model):
+    """A source, from where the link has been found"""
     name = models.CharField(max_length=32)
     slug = models.CharField(max_length=32, unique=True)
 
     def __unicode__(self):
         return self.name
 
-class Origin(models.Model):
-    name = models.CharField(max_length=128)
-
 class UrlViews(models.Model):
+    """A denormalized field that count the number of view for a link"""
     count = models.IntegerField(default=0)
 
     class Meta:
@@ -60,39 +62,45 @@ class UrlViews(models.Model):
         return u"%d" % self.count
 
 class Tag(models.Model):
+    """A tag"""
     name = models.CharField(max_length=128, unique=True)
 
     def __unicode__(self):
         return self.name
 
 class Url(models.Model):
+    """An url"""
     link = models.TextField(unique=True)
+    title = models.TextField()
     views = models.ForeignKey(UrlViews)
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
     content = models.TextField()
     image = models.TextField(null=True, blank=True)
+    inserted_at = models.DateTimeField(default=timezone.now)
 
     def __unicode__(self):
         return self.link
 
 class Author(models.Model):
+    """A person that posted the link"""
     name = models.CharField(max_length=64, unique=True)
     source = models.ForeignKey(Source)
 
 class LinkSum(models.Model):
-    tags = models.TextField()
+    """A summary of the link. 
+    It's the user's part of the link, describing who posted the link,
+    in which collection the link stays, it's origin ...
+    """
+    tags = models.ManyToManyField(Tag)
     summary = models.TextField(null=True)
-    title = models.TextField()
-    link = models.TextField()
     url = models.ForeignKey(Url, null=True, blank=True)
-    origin = models.ForeignKey(Origin, null=True)
-    source = models.ForeignKey(Source, null=True)
     read = models.BooleanField(default=False)
     recommanded = models.IntegerField(default=1)
     collection = models.ForeignKey(Collection, null=True)
-    inserted_at = models.DateTimeField(default=datetime.now)
+    inserted_at = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User)
+    source = models.ManyToManyField(Source, null=True)
     authors = models.ManyToManyField(Author, related_name="authors")
     hidden = models.BooleanField(default=False)
 
@@ -100,23 +108,12 @@ class LinkSum(models.Model):
         unique_together = ("url", "user")
 
     def __unicode__(self):
-        return u'%s - user(%d) collection(%d)' % (self.link, self.user_id, self.collection_id)
-
-    def reco(self):
-        return """%d""" % self.recommanded
-    reco.short_description = "Reco"
-
-    def link_title(self):
-        return """<a href="%s" target="_blank">%s</a>""" % (self.link, self.title)
-    link_title.short_description = "Title"
-    link_title.allow_tags = True
-
-    def get_tags(self):
-        if self.tags:
-            return self.tags.split(',')
-        return []
+        if self.user_id and self.collection_id:
+            return u'%s - user(%d) collection(%d)' % (self.url, self.user_id, self.collection_id)
+        return u'%s' % self.url
 
 class Rss(models.Model):
+    """The simple RSS model"""
     link = models.URLField(verify_exists=False, max_length=1024, unique=True)
     name = models.CharField(max_length=128)
     users = models.ManyToManyField(User)
