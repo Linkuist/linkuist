@@ -87,7 +87,9 @@ INSTALLED_APPS = (
     'link_tracking',
     'semantism',
     'webfront',
+    'tastypie',
 )
+
 
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.twitter.TwitterBackend',
