@@ -15,24 +15,17 @@ from semantism.process import index_url
 
 links_queue = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
-@login_required
-def bookmark(request, template_name="collector/bookmark.html"):
-    url = request.GET.get('url')
-    user = request.user
-    links_queue.enqueue(index_url, url, request.user.id, datetime.now(), request.user.username, "bookmarks")
-    return redirect(url)
-
-
 def secret_bookmark(request, username):
     url = request.GET.get('url')
     link_from = request.GET.get('from')
     source = request.GET.get('source')
+    token = request.GET.get('token')
 
-    if not url or not link_from or not source:
+    if not url or not link_from or not source or not token:
         return HttpResponse(status=404)
 
     try:
-        user = User.objects.get(username=username)
+        user = User.objects.get(username=username, userprofile__token=token)
     except User.DoesNotExist:
         return HttpResponse(status=403)
 
