@@ -83,6 +83,7 @@ INSTALLED_APPS = (
     # Project apps
     'collector',
     'source',
+    'userprofile',
     'link_tracking',
     'semantism',
     'webfront',
