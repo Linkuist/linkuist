@@ -7,7 +7,7 @@ from webapi import api
 
 v1_api = Api(api_name='1.0')
 v1_api.register(api.LinkSumResource())
-v1_api.register(api.UrlResource())
+v1_api.register(api.UrlResource())  
 
 
 urlpatterns = patterns('',
