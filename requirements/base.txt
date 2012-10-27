@@ -19,3 +19,4 @@ times==0.4
 tweepy==1.9
 numpy==1.6.2
 pytidylib==0.2.1
+django-tastypie==0.9.12

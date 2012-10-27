@@ -37,6 +37,7 @@ The project requires a lots of dependancies:
   * times in version 0.4
   * tweepy in version 1.9
   * webarticle2text
+  * tastypie in version 0.9.12
 
 Configuration
 -------------
