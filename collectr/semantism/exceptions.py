@@ -4,6 +4,18 @@
 
 """
 
+class LinkExtractorException(Exception):
+    pass
+
+class FetchException(LinkExtractorException):
+    pass
+
+class ContentTypeNotFound(LinkExtractorException):
+    pass
+
+class UnsupportedContentType(LinkExtractorException):
+    pass
+
 
 class BaseIndexException(Exception):
     pass

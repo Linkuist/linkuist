@@ -4,6 +4,7 @@
 
 """
 # python
+import logging
 import os
 import pprint
 import re
@@ -11,339 +12,154 @@ import string
 import sys
 import time
 import traceback
+import urllib
+import urlparse
 
 from cStringIO import StringIO
-from urlparse import urlparse
-from lxml import etree
-import lxml.html as LH
 
+DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
 
-# 3rd nltk
-import nltk
-from nltk.corpus import stopwords, webtext
-from nltk.collocations import BigramCollocationFinder
-from nltk.metrics import BigramAssocMeasures, spearman_correlation, ranks_from_scores
-from nltk.tag.simplify import simplify_wsj_tag
-
-# 3rd party
+# 3rdparty
 import requests
+from goose.Goose import Goose
 
-import webarticle2text
+# local
+from semantism import exceptions as index_exc
 
-# django
-from django.db.models import Q, F
-
-# collector
-try:
-    from semantism.embed import oembed
-except Exception, exc:
-    oembed = {}
-from semantism.exceptions import (DeleteLinkException, UnsupportedContentException,
-                                  UrlExtractException)
-
-from semantism.language import LangClassifier
-
-from source.models import (Author, Source, LinkSum, Filter,
-                           Collection, Url, UrlViews, Tag)
+logger = logging.getLogger(__name__)
 
 
-"""
-http://code.google.com/p/decruft/w/list
-https://github.com/buriy/python-readability
-http://stackoverflow.com/questions/4363899/making-moves-w-websockets-and-python-django-twisted
-http://code.google.com/p/nltk/source/browse/trunk/nltk_contrib/nltk_contrib/misc/langid.py
 
-"""
-
-class UrlParser(object):
-    """Parse our url"""
-
-    def __init__(self, logger, url):
-        self.tags = []
-        self.tagstring = None
-        self.title = []
-        self.image = None
+class Link(object):
+    """Cleanup and validate a link"""
+    def __init__(self, url):
         self.url = url
-        self.logger = logger
-        # full page content (pdf, html, whatever)
-        self.content = None
-        # extracted text from the raw content
-        self.extracted_text = None
-        # extracted summary (mostly the 3 lines of the text)
-        self.summary = None
-        self.status_code = None
-        self.content_type = None
-        self.lang_classifier = LangClassifier()
+        self.ignorable_qs = ('utm_source', 'utm_medium', 'utm_campaign')
+        self.ignorable_anchor = ('xtor',)
 
-    def is_html_page(self):
-        return 'html' in self.content_type
-
-    def is_image(self):
-        return 'image' in self.content_type
-
-    def is_valid_url(self, url=None):
+    def is_valid(self, url=None):
         if not url:
             url = self.url
-
-    def clean_url(self, url=None):
-        import cgi
-        import urlparse
-        import urllib
-
         if not url:
-            url = self.url
-
-        u = urlparse.urlparse(url)
-        qs = cgi.parse_qs(u[4])
-        for unwanted_qs in ('utm_', 'xtor'):
-            qs = dict((k, v) for k, v in qs.iteritems() if not
-                    k.startswith(unwanted_qs))
-            u = u._replace(query=urllib.urlencode(qs, True))
-            url = urlparse.urlunparse(u)
-        url = url.replace('#!', '?_escaped_fragment_=')
-        self.logger.info("cleaned url : %s" % url)
-        return url
-
-    def find_url_language(self, summary=None):
-        """Guess the content's language"""
-        if not summary or not len(summary):
-            if not self.summary or not len(summary):
-                print "falling back"
-                self.logger.warning("Can't find document lang, fallback to english")
-                self.lang = "en"
-                return self.lang
-            summary = self.summary
-
-        raw_text = summary[:]
-        try:
-            lang = self.lang_classifier.find_language(raw_text)
-            self.lang = lang[:2]
-            self.logger.info("found lang : %s" % self.lang)
-        except Exception, exc:
-            self.logger.warning("Can't find document lang, fallback to english")
-            self.logger.exception(exc)
-            self.lang = "en"
-        return self.lang
-
-    def extract_html_content(self, content=None):
-        """Extract the most interesting content from the html"""
-        if not content:
-            content = self.content
-        content = webarticle2text.extractFromHTML(content)
-        return content
-
-    def extract_content_summary(self, content):
-        """resume the content of the link"""
-        summary = content.split('.')
-        summary = filter(len, summary)
-        summary = " ".join(summary[:10])
-        summary += "."
-        self.summary = summary
-        return self.summary
-
-    def find_collection(self, linksum, filtrs):
-        """Find the right collection for this link"""
-
-        for filtr in filtrs:
-            link_attr = getattr(linksum, filtr.field)
-            if re.match(filtr.regexp, link_attr):
-                if filtr.to_delete:
-                    raise DeleteLinkException("Deleting link")
-                linksum.collection_id = filtr.to_collection_id
-                return filtr
-        return None
-
-    def find_tags(self, summary=None, lang=None):
-        if not summary:
-            summary = self.content
-        if not lang:
-            lang = self.lang
-
-        raw_text = summary[:]
-        if lang == "fr":
-            lang = "french"
-        elif lang == "en":
-            lang = "english"
-
-        scorer = BigramAssocMeasures.likelihood_ratio
-        compare_scorer = BigramAssocMeasures.raw_freq
-
-        tokenised = self.tokenise(raw_text)
-        ignored_words = stopwords.words(lang)
-        word_filter = lambda w: len(w) < 3 or w.lower() in ignored_words
-        cf = BigramCollocationFinder.from_words(tokenised)
-        cf.apply_freq_filter(3)
-        cf.apply_word_filter(word_filter)
-
-    #    print '\t', [' '.join(tup) for tup in cf.nbest(scorer, 15)]
-    #    print '\t Correlation to %s: %0.4f' % (compare_scorer.__name__,
-    #                spearman_correlation(
-    #                ranks_from_scores(cf.score_ngrams(scorer)),
-    #                ranks_from_scores(cf.score_ngrams(compare_scorer))))
-        self.tags = [u' '.join(tup) for tup in cf.nbest(scorer, 15)]
-        punctuation = set(string.punctuation)
-        tags = []
-
-        def has_punctuation(tag):
-            for c in string.punctuation:
-                if c in tag:
-                    return True
-
             return False
 
-        for tag in self.tags:
-            tag = tag.title()
-            if not has_punctuation(tag):
-                tags.append(tag)
-        self.tags = tags
-        self.tagstring = ",".join(self.tags)
-        return self.tags
-
-    def url_morph(self, url):
-        if url.startswith('http://twitpic.com/'):
-            url = re.sub("http://twitpic.com/([a-zA-Z0-9]*)", lambda x: "http://twitpic.com/show/full/%s.jpg" % x.group(1), url)
-        return url
-
-    def extract_url_content(self, url=None):
+    def clean_anchors(self, url=None):
+        """Cleanup unused #anchors"""
         if not url:
             url = self.url
-        url_parse = urlparse(url)
+        
+        u = urlparse.urlparse(url)
+        fragment = u.fragment
+        qs = urlparse.parse_qs(u[5], keep_blank_values=True)
+        for to_ignore in self.ignorable_anchor:
+            if to_ignore in qs:
+                fragment = fragment.replace("{0}={1}".format(to_ignore, qs[to_ignore][0]), '')
+
+        u = urlparse.ParseResult(*u[:5], fragment=fragment)
+        url = urlparse.urlunparse(u)
+        return url
+
+    def clean_querystring(self, url=None):
+        """Cleanup useless querystring parameter"""
+        if not url:
+            url = self.url
+        
+        u = urlparse.urlparse(url)
+        qs = urlparse.parse_qs(u[4], keep_blank_values=True)
+        new_qs = dict((k, v) for k, v in qs.iteritems() if not k in self.ignorable_qs)
+
+        u = u._replace(query=urllib.urlencode(new_qs, doseq=True))
+        url = urlparse.urlunparse(u)
+        return url
+
+    def clean(self, url=None):
+        if not url:
+            url = self.url
+        url = self.clean_anchors(url)
+        url = self.clean_querystring(url)
+        return url
+
+
+
+class LinkExtractor(object):
+    """Extract usefull informations from a link"""
+
+    def __init__(self, url):
+        self.url = url
+        self.goose = Goose()
+        self.raw_content = None
+        self.full_content = None
+        self.summary = None
+        self.picture = None
+        self.content_type = None
+        self.status_code = None
+        self.response = None
+
+        self.title = None
+
+    def fetch_url_content(self, url=None):
+        """Fetches the content of the url"""
+        if not url:
+            url = self.url
         headers = {}
-        if url_parse.netloc != "t.co":
-            user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
-            headers['User-Agent'] = user_agent
+
+        url_parse = urlparse.urlparse(url)
+        # quick hack: use our default useragent for some tiny urls sites
+        if url_parse.netloc in ('t.co', 'bit.ly'):
+            headers['User-Agent'] = DEFAULT_USER_AGENT
 
         response = requests.get(url, headers=headers)
-        self.content_type = response.headers.get('content-type')
-        self.status_code = response.status_code
-        self.url = self.url_morph(response.url)
-        self.url = self.clean_url(self.url)
-        self.url_parse = urlparse(self.url)
 
-        if url_parse.netloc in oembed.keys():
-            self.logger.debug("found oembed")
-            mod = oembed[url_parse.netloc]
-            self.content = mod.get_widget(url)
-            self.summary = self.content
-            self.title = os.path.basename(url_parse.path)
-            self.content_type = "collectr/parsed"
-            self.tags = [mod.get_tag()]
-            self.tagstring = mod.get_tag()
-            return
+        if response.status_code >= 400:
+            raise index_exc.FetchException(
+                u"Got a {0} status code while fetching {1}".format(self.status_code, url))
 
-        if self.status_code >= 400:
-            raise UrlExtractException("Can't extract content for %s (http<%d>)" % (url, response.status_code))
+        self.response = response
 
-        elif self.is_image():
-            self.logger.debug("log: content type : image")
-            self.title = os.path.basename(url_parse.path)
-            self.image = self.url
-            self.content = ""
-            self.summary = ""
+    def extract_text_html(self, page_content, url):
+        article = self.goose.extractContent(url=url, rawHTML=page_content)
+        self.full_content = article.cleanedArticleText
+        if article.topImage:
+            self.picture = article.topImage.imageSrc
 
-        elif self.is_html_page():
-            self.content = response.text
-            if not self.content or not len(self.content):
-                self.summary = None
-                self.content = None
-            else:
-                # the real interesting part of the page
-                self.extracted_text  = self.extract_html_content(self.content)
-                self.find_url_language(self.extracted_text)
-                #self.logger.info("Page content : %s" % self.extracted_text)
+        self.title = article.title
+        self.summary = self.get_summary(article.cleanedArticleText)
 
-                # seems lxml don't like unicode :(
-                self.title = self.find_title(response.content)
-                self.logger.info("Page title : %s" % self.title)
-                self.image = self.find_taller_image(self.content)
-                self.summary = self.extract_content_summary(self.extracted_text)
-                self.logger.info("Page summary : %s" % self.summary)
+    def extract_image_generic(self, page_content, url):
+        self.picture = url
+        self.title = os.path.basename(url_parse.path)
+        self.image = self.url
+        self.content = ""
+        self.full_content = ""
+        # we don't want to store image in the database as blob.
+        self.raw_content = ""
+        self.summary = ""
 
+    extract_image_jpeg = extract_image_png = extract_image_gif = extract_image_generic
+
+    def extract(self, url=None):
+        """Dispatch the resource extraction depending on the content_type"""
+        if not url:
+            url = self.url
+
+        self.content_type = self.response.headers.get('content-type')
+        self.status_code = self.response.status_code
+        self.raw_content = self.response.content
+
+        # parsing depending on content_type
+        if self.content_type:
+            method_name = "extract_{0}".format(self.content_type.replace('/', '_'))
+            if not hasattr(self, method_name):
+                raise index_exc.UnsupportedContentType()
+            getattr(self, method_name)(self.response.content, url)
+                
         else:
-            self.summary = None
-            self.title = os.path.basename(url_parse.path)
+            raise index_exc.ContentTypeNotFound
 
-        if self.image:
-            self.logger.info("found image : %s"%self.image)
 
-    def extract_link_xpath(self, xpath):
-        if not self.summary:
-            return self.summary
-        try:
-            doc = LH.fromstring(self.content)
-            result = doc.xpath(xpath)
-            if isinstance(result, (list, tuple)):
-                if not len(result):
-                    return
-                result = result[0]
-            for attr in ('style', 'border', 'height', 'width'):
-                try:
-                    del result.attrib[attr]
-                except KeyError:
-                    pass
-            self.summary = LH.tostring(result)
-            self.logger.info("extracted xpath content: %s" % self.summary)
-        except Exception, exc:
-            self.logger.exception(exc)
-            self.summary = None
-            return None
-        return self.summary
+    def get_summary(self, text_content):
+        """Extract a summary from a text"""
+        summary = text_content[:300]
+        return summary
 
-    def as_linksum(self):
-        """Return a linksum objet"""
-        pass
 
-    def find_encoding(self):
-        return self.content
-
-    def tokenise(self, raw_text, callback=None):
-        raw = nltk.clean_html(raw_text)
-        tokens = nltk.wordpunct_tokenize(raw)
-        return tokens
-
-    def find_title(self, html):
-        tree = LH.fromstring(html)
-        title = tree.find(".//title")
-        if title is not None:
-            return title.text
-        return None
-
-    def find_taller_image(self, page_content):
-        best_perimeter = 0
-        found_image = None
-        if not page_content or len(page_content) <= 0:
-            self.logger.warning("Page has no content")
-            return found_image
-        tree = LH.fromstring(page_content)
-        image_list = tree.xpath("//img")
-
-        for image in image_list:
-            width = image.get('width')
-            height = image.get('height')
-            if width and height:
-                try:
-                    width = int(width)
-                    height = int(height)
-                except ValueError:
-                    continue
-                perimeter = width * height
-                if perimeter > best_perimeter:
-                    best_perimeter = perimeter
-                    found_image = image.get('src')
-
-        if found_image and found_image.startswith('/'):
-            url_parse = urlparse(self.url)
-            found_image = "%s://%s%s" % (url_parse.scheme,
-                    url_parse.netloc, found_image)
-        elif found_image and not found_image.startswith('http'):
-            # this is a relative path to the image
-            url_parse = urlparse(self.url)
-            if not self.url.endswith('/'):
-                path = "/".join(url_parse.path.split("/")[:-1]) + "/"
-                found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
-                        path, found_image)
-            else:
-                found_image = "%s://%s/%s%s" % (url_parse.scheme, url_parse.netloc,
-                        url_parse.path, found_image)
-
-        return found_image

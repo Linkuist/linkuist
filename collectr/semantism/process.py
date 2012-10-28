@@ -27,7 +27,7 @@ try:
     from semantism.embed import oembed
 except Exception, exc:
     oembed = {}
-from semantism.link import UrlParser
+from semantism.link import LinkExtractor
 from semantism import exceptions as index_exc
 
 
@@ -38,14 +38,6 @@ logger.setLevel(logging.DEBUG)
 sources = dict((source.name.lower(), source) for source in Source.objects.all())
 default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
 
-
-def init():
-    logger = logging.getLogger('index_url')
-
-    sources = dict((source.name.lower(), source) for source in Source.objects.all())
-    default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
-
-    return logger, sources, default_collection
 
 def find_urls(content):
     if isinstance(content, basestring):
@@ -60,10 +52,10 @@ def find_urls(content):
     urls = [d['url'] for d in content.entities['urls']]
     return urls
 
-def create_url(url_parser):
+def create_url(link_extractor):
     url = None
     try:
-        url = Url.objects.get(link=url_parser.url)
+        url = Url.objects.get(link=link_extractor.url)
         logger.info(u"Url already exists in database")
         return url
     except Url.DoesNotExist:
@@ -71,19 +63,18 @@ def create_url(url_parser):
 
     uv = UrlViews.objects.create(count=0)
     try:
-        summary = url_parser.summary or ""
-        url = Url.objects.create(link=url_parser.url, views=uv,
-            summary=summary, content=url_parser.content, image=url_parser.image)
+        url = Url.objects.create(link=link_extractor.url, views=uv,
+            summary=link_extractor.summary, content=link_extractor.full_content,
+            image=link_extractor.picture)
 
     except Exception, exc:
-        raise index_exc.UrlCreationException(u"Can't create the Url object", exc_info=True)
+        logger.exception(u"Can't create the Url object")
+        raise index_exc.UrlCreationException(u"Can't create the Url object")
 
-    if url_parser.image:
-        url.image = url_parser.image
-
-    if url_parser.is_html_page():
-        tags = url_parser.find_tags()
-        url.create_tags(tags)
+    # todo: tags
+    # if link_extractor.is_html_page():
+    #     tags = link_extractor.find_tags()
+    #     url.create_tags(tags)
 
     url.save()
 
@@ -106,6 +97,7 @@ def index_url(link, user_id, link_at, author_name, source_name):
     except KeyError:
         logger.info(u"source %s unknown" % source_name)
         return -1
+
     try:
         author = Author.objects.get(name=author_name)
     except Author.DoesNotExist:
@@ -113,18 +105,18 @@ def index_url(link, user_id, link_at, author_name, source_name):
         author, created = Author.objects.get_or_create(name=author_name, source=source)
         
     for url in urls:
-        url_parser = UrlParser(logger, url)
-
+        link_extractor = LinkExtractor(url)
+        link_extractor.fetch_url_content()
 
         try:
-            url_parser.extract_url_content()
+            link_extractor.extract()
         except Exception, exc:
             logger.warning(u"Can't extract url_content from %s" % url)
             logger.exception(exc)
             continue
 
         try:
-            url_instance = create_url(url_parser)
+            url_instance = create_url(link_extractor)
         except index_exc.UrlCreationException:
             logger.warning(u"can't create url for link {0}".format(url), exc_info=True)
             continue
@@ -145,19 +137,19 @@ def index_url(link, user_id, link_at, author_name, source_name):
         lsum = LinkSum(url=url_instance, collection_id=default_collection.pk,
             read=False, user_id=user_id)
 
-        try:
-            filtr = url_parser.find_collection(lsum, filters)
-            if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
-                filtr.xpath = None
-                filtr.save()
-            if filtr and filtr.xpath is not None:
-                lsum.summary = url_parser.extract_link_xpath(filtr.xpath)
-                lsum.collection_id = filtr.to_collection_id
-                logger.info(u"new collection : {0}".format(filtr.to_collection_id))
+        # try:
+        #     filtr = link_extractor.find_collection(lsum, filters)
+        #     if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
+        #         filtr.xpath = None
+        #         filtr.save()
+        #     if filtr and filtr.xpath is not None:
+        #         lsum.summary = link_extractor.extract_link_xpath(filtr.xpath)
+        #         lsum.collection_id = filtr.to_collection_id
+        #         logger.info(u"new collection : {0}".format(filtr.to_collection_id))
 
-        except index_exc.DeleteLinkException:
-            logger.info(u"Link not saved, filtered")
-            continue
+        # except index_exc.DeleteLinkException:
+        #     logger.info(u"Link not saved, filtered")
+        #     continue
 
         try:
             lsum.save()

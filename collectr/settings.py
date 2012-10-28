@@ -144,6 +144,8 @@ LOGGING = {
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 
+SOUTH_TESTS_MIGRATE = False
+
 try:
     from settings_local import *
 except ImportError:
