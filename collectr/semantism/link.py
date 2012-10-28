@@ -148,7 +148,8 @@ class LinkExtractor(object):
 
         # parsing depending on content_type
         if self.content_type:
-            method_name = "extract_{0}".format(self.content_type.replace('/', '_'))
+            method_name = self.content_type.split(';')[0]
+            method_name = "extract_{0}".format(method_name.replace('/', '_'))
             if not hasattr(self, method_name):
                 raise index_exc.UnsupportedContentType()
             getattr(self, method_name)(self.response.content, url)
