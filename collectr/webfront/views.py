@@ -161,7 +161,7 @@ def collection(request, collection=None, template="webfront/collection.html"):
 def collection_source(request, source, template="webfront/collection.html"):
     links = LinkSum.objects.select_related('authors')\
                            .filter(user__id=request.user.id)\
-                           .filter(source__slug=source)\
+                           .filter(sources__slug=source)\
                            .filter(hidden=False)\
                            .order_by('-pk')[:100]
     data = {
