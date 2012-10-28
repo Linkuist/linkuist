@@ -24,7 +24,7 @@
       <div class="row-fluid">
 {% for link in links %}
         <div class="span6">
-            <h3>{{ link.title }}
+            <h3>{{ link.url.title }}
               {% if link.read %}
               <i class="icon-search"></i>
               {% else %}
@@ -49,9 +49,9 @@
             {% if link.url.image %}
             <img src="{{ link.url.image }}" />
             {% endif %}
-          {% if not link.summary == "None" %}
-          <p>{{ link.summary|safe }}</p>
-          {% endif %}
+          
+          <p>{{ link..url.summary|safe }}</p>
+          
           <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
     {% if forloop.counter|divisibleby:"2" %}
