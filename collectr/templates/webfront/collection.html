@@ -43,14 +43,14 @@
                 </a>
             {% endif %}
           <p> on {{ link.inserted_at }}</p>
-          <p> {% for tag in link.get_tags %}
+          <p> {% for tag in link.tags.all %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
             {% if link.url.image %}
             <img src="{{ link.url.image }}" />
             {% endif %}
           
-          <p>{{ link..url.summary|safe }}</p>
+          <p>{{ link.url.summary|safe }}</p>
           
           <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->

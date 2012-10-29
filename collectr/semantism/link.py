@@ -158,9 +158,14 @@ class LinkExtractor(object):
             raise index_exc.ContentTypeNotFound
 
 
-    def get_summary(self, text_content):
+    def get_summary(self, text_content, max_length=300):
         """Extract a summary from a text"""
-        summary = text_content[:300]
-        return summary
+        offset = 0
+        while offset < max_length:
+            offset_tmp = text_content.find('.', offset + 1, max_length)
+            if offset_tmp <= 0:
+                break
 
+            offset = offset_tmp
 
+        return text_content[:offset + 1]
