@@ -59,9 +59,10 @@ sub look_for_urls {
 
     my $base_url = Irssi::settings_get_str('collectr_url');
     my $collectr_username = Irssi::settings_get_str('collectr_username');
+    my $collectr_token = Irssi::settings_get_str('collectr_token');
     my $final_target = $target;
     $final_target =~ s/#//g;
-    my $final_url = "$base_url/$collectr_username/?url=$url&from=".$nick."@".$final_target."&source=irc";
+    my $final_url = "$base_url/$collectr_username/?url=$url&from=".$nick."@".$final_target."&source=irc&token=".$collectr_token;
     #my $i = handle_url($final_url);
     my $child = fork();
     unless (defined $child) {
@@ -133,7 +134,8 @@ $browser->timeout(3);
 
 # define settings
 Irssi::settings_add_str('collectr', 'collectr_username', "blank");
-Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org:8200/collector/bookmark/secret");
+Irssi::settings_add_str('collectr', 'collectr_token', "blank");
+Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org/collector/bookmark/secret");
 
 # hook on irssi signals
 Irssi::signal_add('message public', 'look_for_urls');
