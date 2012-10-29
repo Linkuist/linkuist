@@ -17,7 +17,7 @@ import urlparse
 
 from cStringIO import StringIO
 
-DEFAULT_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1 Iceweasel/9.0.1"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_1) AppleWebKit/537.4 (KHTML, like Gecko) Chrome/22.0.1229.94 Safari/537.4"
 
 # 3rdparty
 import requests
@@ -105,11 +105,13 @@ class LinkExtractor(object):
 
         url_parse = urlparse.urlparse(url)
         # quick hack: use our default useragent for some tiny urls sites
-        if url_parse.netloc in ('t.co', 'bit.ly'):
+        # t.co have different behaviour, and legacy website may ban curl &
+        # others
+        if url_parse.netloc not in ('t.co', 'bit.ly'):
             headers['User-Agent'] = DEFAULT_USER_AGENT
 
         response = requests.get(url, headers=headers)
-
+        self.url = url = response.url
         if response.status_code >= 400:
             raise index_exc.FetchException(
                 u"Got a {0} status code while fetching {1}".format(self.status_code, url))
@@ -126,6 +128,7 @@ class LinkExtractor(object):
         self.summary = self.get_summary(article.cleanedArticleText)
 
     def extract_image_generic(self, page_content, url):
+        url_parse = urlparse.urlparse(url)
         self.picture = url
         self.title = os.path.basename(url_parse.path)
         self.image = self.url

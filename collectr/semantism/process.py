@@ -65,7 +65,7 @@ def create_url(link_extractor):
     try:
         url = Url.objects.create(link=link_extractor.url, views=uv,
             summary=link_extractor.summary, content=link_extractor.full_content,
-            image=link_extractor.picture)
+            image=link_extractor.picture, title=link_extractor.title)
 
     except Exception, exc:
         logger.exception(u"Can't create the Url object")
