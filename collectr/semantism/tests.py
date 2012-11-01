@@ -53,6 +53,10 @@ class LinkExtractorTestCase(unittest.TestCase):
         summary = l.get_summary(text_content, max_length=300)
         self.assertEqual(summary, "Le Lorem Ipsum est simplement du faux texte employé dans la composition et la mise en page avant impression.")
 
+    def test_url_cleaned(self):
+        l = LinkExtractor('http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/#xtor=RSS-3208')
+        self.assertEqual(l.url, 'http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/')
+        l = LinkExtractor('http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/#xtor=RSS-3208')
 
 class IndexUrlTestCase(unittest.TestCase):
 

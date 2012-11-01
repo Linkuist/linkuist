@@ -75,12 +75,11 @@ class Link(object):
         return url
 
 
-
 class LinkExtractor(object):
     """Extract usefull informations from a link"""
 
     def __init__(self, url):
-        self.url = url
+        self.url = Link(url).clean()
         self.goose = Goose()
         self.raw_content = None
         self.full_content = None
