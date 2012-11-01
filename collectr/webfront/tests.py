@@ -28,3 +28,7 @@ class WebfrontTestCase(TransactionTestCase):
     def test_redirect(self):
         response = self.client.get(reverse('webfront:collection'))
         self.assertEqual(response.status_code, 200)
+
+    def test_links_today(self):
+        response = self.client.get(reverse('webfront:links_today'))
+        self.assertEqual(response.status_code, 200)
