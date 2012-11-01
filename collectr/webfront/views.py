@@ -28,7 +28,7 @@ def search(request, template="webfront/search.html"):
     querystring = request.GET['query'].replace(' ', ' & ')
 
     links = LinkSum.objects.raw(
-        """SELECT DISTINCT "source_linksum"."id", "source_linksum"."tags", "source_linksum"."summary", "source_linksum"."title", "source_linksum"."link", "source_linksum"."url_id", "source_linksum"."origin_id", "source_linksum"."source_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id"
+        """SELECT DISTINCT "source_linksum"."id", "source_linksum"."url_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id"
            FROM source_linksum
            INNER JOIN source_url ON
               (source_linksum.url_id = source_url.id)
