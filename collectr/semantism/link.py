@@ -6,16 +6,10 @@
 # python
 import logging
 import os
-import pprint
-import re
-import string
-import sys
-import time
-import traceback
+
 import urllib
 import urlparse
 
-from cStringIO import StringIO
 
 DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_1) AppleWebKit/537.4 (KHTML, like Gecko) Chrome/22.0.1229.94 Safari/537.4"
 
@@ -27,7 +21,6 @@ from goose.Goose import Goose
 from semantism import exceptions as index_exc
 
 logger = logging.getLogger(__name__)
-
 
 
 class Link(object):
@@ -47,13 +40,14 @@ class Link(object):
         """Cleanup unused #anchors"""
         if not url:
             url = self.url
-        
+
         u = urlparse.urlparse(url)
         fragment = u.fragment
         qs = urlparse.parse_qs(u[5], keep_blank_values=True)
         for to_ignore in self.ignorable_anchor:
             if to_ignore in qs:
-                fragment = fragment.replace("{0}={1}".format(to_ignore, qs[to_ignore][0]), '')
+                fragment = fragment.replace("{0}={1}".format(
+                    to_ignore, qs[to_ignore][0]), '')
 
         u = urlparse.ParseResult(*u[:5], fragment=fragment)
         url = urlparse.urlunparse(u)
@@ -63,10 +57,11 @@ class Link(object):
         """Cleanup useless querystring parameter"""
         if not url:
             url = self.url
-        
+
         u = urlparse.urlparse(url)
         qs = urlparse.parse_qs(u[4], keep_blank_values=True)
-        new_qs = dict((k, v) for k, v in qs.iteritems() if not k in self.ignorable_qs)
+        new_qs = dict((k, v)
+            for k, v in qs.iteritems() if not k in self.ignorable_qs)
 
         u = u._replace(query=urllib.urlencode(new_qs, doseq=True))
         url = urlparse.urlunparse(u)
@@ -114,7 +109,8 @@ class LinkExtractor(object):
         self.url = url = response.url
         if response.status_code >= 400:
             raise index_exc.FetchException(
-                u"Got a {0} status code while fetching {1}".format(self.status_code, url))
+                u"Got a {0} status code while fetching {1}".format(
+                    self.status_code, url))
 
         self.response = response
 
@@ -156,7 +152,7 @@ class LinkExtractor(object):
             if not hasattr(self, method_name):
                 raise index_exc.UnsupportedContentType()
             getattr(self, method_name)(self.response.content, url)
-                
+
         else:
             raise index_exc.ContentTypeNotFound
 
