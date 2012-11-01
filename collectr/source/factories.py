@@ -59,7 +59,7 @@ class LinkSumFactory(factory.Factory):
     url = factory.SubFactory(UrlFactory)
     collection = factory.SubFactory(CollectionFactory)
     user = factory.SubFactory(UserFactory)
-    source = factory.SubFactory(SourceFactory)
+    #source = factory.SubFactory(SourceFactory)
 
     @classmethod
     def _prepare(cls, create, **kwargs):

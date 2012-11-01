@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 
 from source.models import LinkSum, UrlViews
 
+
 def track_link(request, link_id):
     link = LinkSum.objects.select_related('url__link').get(pk=link_id)
     link.read = True
