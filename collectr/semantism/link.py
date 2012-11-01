@@ -161,7 +161,7 @@ class LinkExtractor(object):
             raise index_exc.ContentTypeNotFound
 
 
-    def get_summary(self, text_content, max_length=300):
+    def get_summary(self, text_content, max_length=500):
         """Extract a summary from a text"""
         offset = 0
         while offset < max_length:
