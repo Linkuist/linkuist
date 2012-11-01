@@ -131,7 +131,6 @@ def collection(request, collection=None, template="webfront/collection.html"):
     if not show_read:
         qs.filter(read=False)
 
-    print request.user.id
     paginator = Paginator(qs, 42)
     try:
         page = int(request.GET.get('page', '1'))
