@@ -25,12 +25,14 @@
 {% for link in links %}
         <div class="span6">
             <h3>{{ link.url.title }}
+
               {% if link.read %}
               <i class="icon-search"></i>
               {% else %}
               <i class="icon-envelope"></i>
               {% endif %}
             </h3>
+            <p><a href="http://twitter.com/share?url=http://{{ request.META.HTTP_HOST }}{% url link_tracking:track_link link.pk %}&text=&quot;{{link.url.title}}&quot;" target='_blank'>tweet</a></p>
             {% if not link.author_id %}
             {% for author in link.authors.all %}
                 <a href="{% url webfront:collection_user author.name, author.source_id %}">
