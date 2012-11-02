@@ -26,7 +26,7 @@ class Link(object):
     """Cleanup and validate a link"""
     def __init__(self, url):
         self.url = url
-        self.ignorable_qs = ('utm_source', 'utm_medium', 'utm_campaign')
+        self.ignorable_qs = ('utm_source', 'utm_medium', 'utm_campaign', 'xtor')
         self.ignorable_anchor = ('xtor',)
 
     def is_valid(self, url=None):
