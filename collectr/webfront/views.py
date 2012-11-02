@@ -23,7 +23,7 @@ def login_view(request, template="webfront/login.html"):
     data = {}
     return render(request, template, data)
 
-def search(request, template="webfront/search.html"):
+def search(request, template="webfront/collection.html"):
     data = {}
     querystring = request.GET['query'].replace(' ', ' & ')
 
