@@ -16,28 +16,30 @@ class LinkSumResource(ModelResource):
         )
 
         resource_name = 'linksum'
+        ordering = '-pk'
 
-    # def apply_authorization_limits(self, request, object_list):
-    #     print object_list
-    #     print "apply_limits"
-    #     if request and hasattr(request, 'user'):
-    #         return object_list.filter(user=request.user.username)
+    def apply_authorization_limits(self, request, object_list):
+        if request and hasattr(request, 'user'):
+            return object_list.filter(user=request.user)
 
-    #     return object_list.none()
+        return object_list.none()
 
 
 class UrlResource(ModelResource):
 
+
     class Meta:
         queryset = source_models.Url.objects.all()
+        excludes = ['raw_tags', 'content']
         authentication = MultiAuthentication(ApiKeyAuthentication(), SessionAuthentication())
         authorization = (
             Authorization()
         )
         resource_name = 'url'
+        ordering = '-pk'
 
-    # def apply_authorization_limits(self, request, object_list):
-    #     if request and hasattr(request, 'user'):
-    #         return object_list.filter(linksum__user=request.user.username)
+    def apply_authorization_limits(self, request, object_list):
+        if request and hasattr(request, 'user'):
+            return object_list.filter(linksum__user=request.user)
 
-    #     return object_list.none()
+        return object_list.none()
