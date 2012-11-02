@@ -113,7 +113,7 @@ class LinkExtractor(object):
             headers['User-Agent'] = DEFAULT_USER_AGENT
 
         response = requests.get(url, headers=headers)
-        self.url = url = response.url
+        self.url = url = Link(response.url).clean()
         if response.status_code >= 400:
             raise index_exc.FetchException(
                 u"Got a {0} status code while fetching {1}".format(
