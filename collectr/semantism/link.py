@@ -7,7 +7,6 @@
 import logging
 import os
 
-import urllib
 import urlparse
 
 
@@ -53,6 +52,11 @@ class Link(object):
         url = urlparse.urlunparse(u)
         return url
 
+    def __urlencode(self, params):
+        params = [i + ((params[i] != None) and ('=' + params[i]) or '')
+            for i in params]
+        return '&'.join(params)
+
     def clean_querystring(self, url=None):
         """Cleanup useless querystring parameter"""
         if not url:
@@ -60,10 +64,14 @@ class Link(object):
 
         u = urlparse.urlparse(url)
         qs = urlparse.parse_qs(u[4], keep_blank_values=True)
-        new_qs = dict((k, v)
-            for k, v in qs.iteritems() if not k in self.ignorable_qs)
+        new_qs = {}
+        for k, v in qs.iteritems():
+            if isinstance(v, (list, tuple)) and len(v) == 1 and not len(v[0]):
+                v = None
+            if not k in self.ignorable_qs:
+                new_qs[k] = v
 
-        u = u._replace(query=urllib.urlencode(new_qs, doseq=True))
+        u = u._replace(query=self.__urlencode(new_qs))
         url = urlparse.urlunparse(u)
         return url
 
@@ -154,7 +162,6 @@ class LinkExtractor(object):
 
         else:
             raise index_exc.ContentTypeNotFound
-
 
     def get_summary(self, text_content, max_length=500):
         """Extract a summary from a text"""

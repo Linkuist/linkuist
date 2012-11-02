@@ -5,6 +5,8 @@
 
 # django
 from django.utils import unittest, timezone
+from django.test import TransactionTestCase
+
 
 
 # project
@@ -32,7 +34,7 @@ class LinkTestCase(unittest.TestCase):
         self.assertEqual(l.clean(), 'http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html')
 
 
-class LinkExtractorTestCase(unittest.TestCase):
+class LinkExtractorTestCase(TransactionTestCase):
 
     def test_extract_html(self):
         l = LinkExtractor('http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html')
@@ -54,11 +56,15 @@ class LinkExtractorTestCase(unittest.TestCase):
         self.assertEqual(summary, "Le Lorem Ipsum est simplement du faux texte employé dans la composition et la mise en page avant impression.")
 
     def test_url_cleaned(self):
-        l = LinkExtractor('http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/#xtor=RSS-3208')
-        self.assertEqual(l.url, 'http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/')
-        l = LinkExtractor('http://philippebernard.blog.lemonde.fr/2012/11/01/pour-que-cesse-le-scandale-des-foyers-religieux-dadolescents/#xtor=RSS-3208')
+        url = """http://www.freenews.fr/spip.php?article12674&utm_source=feedburner&utm_medium=feed&utm_campaign=Feed:+Freenews-Freebox+(Freenews+:+L'actualit%C3%A9+des+Freenautes+-+Toute+l'actualit%C3%A9+pour+votre+Freebox)"""
+        l = LinkExtractor(url)
+        self.assertEqual(l.url, 'http://www.freenews.fr/spip.php?article12674')
+        l.fetch_url_content()
+        l.extract()
+        self.assertEqual(l.url, 'http://www.freenews.fr/spip.php?article12674')
 
-class IndexUrlTestCase(unittest.TestCase):
+
+class IndexUrlTestCase(TransactionTestCase):
 
     def setUp(self):
         self.url = "http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html"
