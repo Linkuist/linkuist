@@ -6,6 +6,8 @@ use strict;
 
 use LWP::UserAgent;
 use POSIX;
+use URI::Escape;
+
 
 use Irssi;
 our ($VERSION, %IRSSI);
@@ -62,6 +64,7 @@ sub look_for_urls {
     my $collectr_token = Irssi::settings_get_str('collectr_token');
     my $final_target = $target;
     $final_target =~ s/#//g;
+    $url = uri_escape($url);
     my $final_url = "$base_url/$collectr_username/?url=$url&from=".$nick."@".$final_target."&source=irc&token=".$collectr_token;
     #my $i = handle_url($final_url);
     my $child = fork();
