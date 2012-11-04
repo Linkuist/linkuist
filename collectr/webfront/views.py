@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 
 # django
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, InvalidPage
+from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 
 # collector
-from source.models import LinkSum, Collection, Source, Url
+from source.models import LinkSum, Collection, Source
 
 
 def home(request, template="webfront/home.html"):
@@ -19,9 +19,11 @@ def home(request, template="webfront/home.html"):
         return redirect("webfront:collection")
     return render(request, template, data)
 
+
 def login_view(request, template="webfront/login.html"):
     data = {}
     return render(request, template, data)
+
 
 def search(request, template="webfront/collection.html"):
     data = {}
@@ -39,7 +41,7 @@ def search(request, template="webfront/collection.html"):
 
     data = {
         'links': links,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
         'sources': Source.objects.all(),
     }
     return render(request, template, data)
@@ -80,7 +82,7 @@ def links_today(request, collection=None, template="webfront/links_today.html"):
     now = datetime.now()
     yesterday = datetime.now() - timedelta(days=1)
     if collection == "unread" or not collection:
-        show_unread = False
+#        show_unread = False
         collection = "all"
     qs = LinkSum.objects.select_related('authors')\
                         .filter(hidden=False)\
@@ -91,7 +93,7 @@ def links_today(request, collection=None, template="webfront/links_today.html"):
         qs.filter(read=False)
 
     if collection:
-        collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
+        collection = Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True))\
                                        .get(name__iexact=collection)
         qs = qs.filter(collection__id=collection.id)
 
@@ -110,25 +112,24 @@ def links_today(request, collection=None, template="webfront/links_today.html"):
     paginator = links
     links = links.object_list
     data = {
-        'unread_count' : links.count(),
-        'paginator' : paginator,
-        'links' : links,
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
-        'sources' : Source.objects.all(),
-        'page_range' : page_range,
+        'unread_count': links.count(),
+        'paginator': paginator,
+        'links': links,
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
+        'sources': Source.objects.all(),
+        'page_range': page_range,
     }
 
     return render(request, template, data)
-
 
 
 @login_required
 def collection(request, collection=None, template="webfront/collection.html"):
     show_read = True
     if collection == "unread" or not collection:
-        show_unread = False
+#        show_unread = False
         collection = "all"
-    collection = Collection.objects.filter(Q(user__id=request.user.id)| Q(user__isnull=True))\
+    collection = Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True))\
                                    .get(name__iexact=collection)
     qs = LinkSum.objects.select_related('authors')\
                         .filter(user__id=request.user.id)\
@@ -153,15 +154,16 @@ def collection(request, collection=None, template="webfront/collection.html"):
     paginator = links
     links = links.object_list
     data = {
-        'unread_count' : links.count(),
-        'paginator' : paginator,
-        'links' : links,
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
-        'sources' : Source.objects.all(),
-        'page_range' : page_range,
+        'unread_count': links.count(),
+        'paginator': paginator,
+        'links': links,
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
+        'sources': Source.objects.all(),
+        'page_range': page_range,
     }
 
     return render(request, template, data)
+
 
 @login_required
 def collection_source(request, source, template="webfront/collection.html"):
@@ -171,10 +173,10 @@ def collection_source(request, source, template="webfront/collection.html"):
                            .filter(hidden=False)\
                            .order_by('-pk')[:100]
     data = {
-        'unread_count' : links.count(),
-        'links' : links,
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
-        'sources' : Source.objects.all(),
+        'unread_count': links.count(),
+        'links': links,
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
+        'sources': Source.objects.all(),
     }
 
     return render(request, template, data)
@@ -188,13 +190,14 @@ def collection_tag(request, tag, template="webfront/collection.html"):
                            .filter(url__tags__name=tag)\
                            .order_by('-pk')[:100]
     data = {
-        'unread_count' : links.count(),
-        'links' : links,
-        'sources' : Source.objects.all(),
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
+        'unread_count': links.count(),
+        'links': links,
+        'sources': Source.objects.all(),
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
     }
 
     return render(request, template, data)
+
 
 @login_required
 def collection_user(request, user, source, template="webfront/collection.html"):
@@ -223,15 +226,16 @@ def collection_user(request, user, source, template="webfront/collection.html"):
     paginator = links
     links = links.object_list
     data = {
-        'unread_count' : links.count(),
-        'paginator' : paginator,
-        'links' : links,
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
-        'sources' : Source.objects.all(),
-        'page_range' : page_range,
+        'unread_count': links.count(),
+        'paginator': paginator,
+        'links': links,
+        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
+        'sources': Source.objects.all(),
+        'page_range': page_range,
     }
 
     return render(request, template, data)
+
 
 @login_required
 def ajax_hide_linksum(request, linksum_id):
