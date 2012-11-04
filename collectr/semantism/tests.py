@@ -90,3 +90,9 @@ class IndexUrlTestCase(TransactionTestCase):
         self.assertEqual(source_models.Url.objects.filter(link=self.url).count(), 1)
         self.assertEqual(source_models.LinkSum.objects.filter(url__link=self.url).count(), 2)
 
+    def test_move_to_collection(self):
+        url = 'http://www.freenews.fr/spip.php?article12674'
+        mfilter = source_factories.FilterFactory(regexp='.*freenews\.fr.*', field='link')
+        lsum = index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
+        self.assertEqual(mfilter.to_collection, lsum.collection)
+

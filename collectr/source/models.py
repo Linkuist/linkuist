@@ -128,6 +128,13 @@ class LinkSum(models.Model):
             return u'%s - user(%d) collection(%d)' % (self.url, self.user_id, self.collection_id)
         return u'%s' % self.url
 
+    @property
+    def link(self):
+        if self.url:
+            return self.url.link
+        return None
+
+
 class Rss(models.Model):
     """The simple RSS model"""
     link = models.URLField(verify_exists=False, max_length=1024, unique=True)

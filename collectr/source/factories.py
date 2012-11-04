@@ -33,6 +33,12 @@ class CollectionFactory(factory.Factory):
     name = factory.Sequence(lambda n: 'Collection%s' % n)
 
 
+class FilterFactory(factory.Factory):
+    FACTORY_FOR = source_models.Filter
+
+    to_collection = factory.SubFactory(CollectionFactory)
+
+
 class AuthorFactory(factory.Factory):
     FACTORY_FOR = source_models.Author
 

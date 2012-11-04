@@ -80,6 +80,20 @@ def create_url(link_extractor):
 
     return url
 
+
+def find_collection(linksum, filter_list):
+    """Find the right collection for this link"""
+
+    for filtr in filter_list:
+        link_attr = getattr(linksum, filtr.field)
+        if re.match(filtr.regexp, link_attr):
+            if filtr.to_delete:
+                raise index_exc.DeleteLinkException("Deleting link")
+            linksum.collection_id = filtr.to_collection_id
+            return filtr
+    return None
+
+
 def index_url(link, user_id, link_at, author_name, source_name):
     """Entry point to store our link & linksum into the database"""
     user_id = int(user_id)
@@ -133,23 +147,15 @@ def index_url(link, user_id, link_at, author_name, source_name):
         except LinkSum.DoesNotExist:
             pass
 
-
         lsum = LinkSum(url=url_instance, collection_id=default_collection.pk,
-            read=False, user_id=user_id)
+                       read=False, user_id=user_id)
 
-        # try:
-        #     filtr = link_extractor.find_collection(lsum, filters)
-        #     if filtr and filtr.xpath is not None and len(filtr.xpath.strip()) == 0:
-        #         filtr.xpath = None
-        #         filtr.save()
-        #     if filtr and filtr.xpath is not None:
-        #         lsum.summary = link_extractor.extract_link_xpath(filtr.xpath)
-        #         lsum.collection_id = filtr.to_collection_id
-        #         logger.info(u"new collection : {0}".format(filtr.to_collection_id))
+        try:
+            find_collection(lsum, filters)
 
-        # except index_exc.DeleteLinkException:
-        #     logger.info(u"Link not saved, filtered")
-        #     continue
+        except index_exc.DeleteLinkException:
+            logger.info(u"Link not saved, filtered")
+            continue
 
         try:
             lsum.save()
@@ -161,3 +167,5 @@ def index_url(link, user_id, link_at, author_name, source_name):
         except Exception, exc:
             logger.exception(exc)
         logger.info(u"Added new link for user {0}".format(user_id))
+
+        return lsum
