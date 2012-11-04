@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 # python
-from urlparse import urlparse
-from datetime import datetime
 
 # django
 from django.db import models
@@ -21,6 +19,7 @@ FILTERFIELDCHOICES = (
     ('author', 'author'),
 )
 
+
 class Collection(models.Model):
     """A collection. Mostly the theme"""
     user = models.ForeignKey(User, null=True, blank=True)
@@ -28,6 +27,7 @@ class Collection(models.Model):
 
     def __unicode__(self):
         return "%s (%d)" % (self.name, self.user_id or 0)
+
 
 class Filter(models.Model):
     """A filter for links. to delete them, or move them to a collection"""
@@ -43,6 +43,7 @@ class Filter(models.Model):
             return u"delete match %s (%d)" % (self.regexp, self.user_id or 0)
         return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id or 0)
 
+
 class Source(models.Model):
     """A source, from where the link has been found"""
     name = models.CharField(max_length=32)
@@ -50,6 +51,7 @@ class Source(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class UrlViews(models.Model):
     """A denormalized field that count the number of view for a link"""
@@ -62,12 +64,14 @@ class UrlViews(models.Model):
     def __unicode__(self):
         return u"%d" % self.count
 
+
 class Tag(models.Model):
     """A tag"""
     name = models.CharField(max_length=128, unique=True)
 
     def __unicode__(self):
         return self.name
+
 
 class Url(models.Model):
     """An url"""
@@ -93,13 +97,15 @@ class Url(models.Model):
     def __unicode__(self):
         return self.link
 
+
 class Author(models.Model):
     """A person that posted the link"""
     name = models.CharField(max_length=64, unique=True)
     source = models.ForeignKey(Source)
 
+
 class LinkSum(models.Model):
-    """A summary of the link. 
+    """A summary of the link.
     It's the user's part of the link, describing who posted the link,
     in which collection the link stays, it's origin ...
     """
@@ -135,4 +141,3 @@ class Rss(models.Model):
 
     def __unicode__(self):
         return self.name
-
