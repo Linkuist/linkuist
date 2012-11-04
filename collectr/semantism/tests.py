@@ -7,8 +7,6 @@
 from django.utils import unittest, timezone
 from django.test import TransactionTestCase
 
-
-
 # project
 from source import factories as source_factories
 from source import models as source_models
@@ -72,15 +70,12 @@ class IndexUrlTestCase(TransactionTestCase):
         self.author = source_factories.AuthorFactory()
         self.user = source_factories.UserFactory()
 
-
     def test_link_index(self):
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
 
-
         self.assertEqual(source_models.Url.objects.filter(link=self.url).count(), 1)
         self.assertEqual(source_models.LinkSum.objects.filter(user=self.user).count(), 1)
-
 
     def test_link_from_two(self):
         another_user = source_factories.UserFactory()

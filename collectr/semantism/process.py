@@ -8,19 +8,20 @@
 # python
 import logging
 import os
+import re
 import sys
 
 sys.path.append('../')
 sys.path.append('../../')
 
-os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'collectr.settings'
 
 # django
-from django.db.models import Q, F
+from django.db.models import Q
 
 # collectr
 from source.models import (Author, Source, LinkSum, Filter,
-                           Collection, Url, UrlViews, Tag)
+                           Collection, Url, UrlViews)
 
 # semantism
 try:
@@ -29,7 +30,6 @@ except Exception, exc:
     oembed = {}
 from semantism.link import LinkExtractor
 from semantism import exceptions as index_exc
-
 
 
 logger = logging.getLogger('index_url')
@@ -52,6 +52,7 @@ def find_urls(content):
     urls = [d['url'] for d in content.entities['urls']]
     return urls
 
+
 def create_url(link_extractor):
     url = None
     try:
@@ -63,9 +64,12 @@ def create_url(link_extractor):
 
     uv = UrlViews.objects.create(count=0)
     try:
-        url = Url.objects.create(link=link_extractor.url, views=uv,
-            summary=link_extractor.summary, content=link_extractor.full_content,
-            image=link_extractor.picture, title=link_extractor.title)
+        url = Url.objects.create(
+            link=link_extractor.url, views=uv,
+            summary=link_extractor.summary,
+            content=link_extractor.full_content,
+            image=link_extractor.picture,
+            title=link_extractor.title)
 
     except Exception, exc:
         logger.exception(u"Can't create the Url object")
@@ -117,7 +121,7 @@ def index_url(link, user_id, link_at, author_name, source_name):
     except Author.DoesNotExist:
         logger.info(u"Created author '{0}'".format(author_name))
         author, created = Author.objects.get_or_create(name=author_name, source=source)
-        
+
     for url in urls:
         link_extractor = LinkExtractor(url)
         link_extractor.fetch_url_content()
@@ -134,7 +138,6 @@ def index_url(link, user_id, link_at, author_name, source_name):
         except index_exc.UrlCreationException:
             logger.warning(u"can't create url for link {0}".format(url), exc_info=True)
             continue
-
 
         try:
             links_numb = LinkSum.objects.get(url=url_instance, user__id=user_id)
