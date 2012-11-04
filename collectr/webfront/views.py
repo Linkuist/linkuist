@@ -38,31 +38,38 @@ def search(request, template="webfront/collection.html"):
          """, [querystring])
 
     data = {
-        'links' : links,
-        'collections' : Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
-        'sources' : Source.objects.all(),
+        'links': links,
+        'collections': Collection.objects.filter(Q(user__id=request.user.id)|Q(user__isnull=True)),
+        'sources': Source.objects.all(),
     }
     return render(request, template, data)
 
 
 def get_display_paginate_item(paginator, page):
-    max_page_display = 10
+    """Prints nicely the range of paginating"""
+    max_paginated = 5
+    total_page = paginator.num_pages
     page_range = []
-    max_page = paginator.num_pages
+
+    # page starting
     if page == 1:
-        if max_page > max_page_display:
-            page_range = range(1, max_page_display)
-            page_range.append("...")
-            page_range.append(max_page)
+        page_range = range(1, max_paginated)
+        page_range.append('...')
+        page_range.extend(range(total_page - max_paginated, max_paginated + 1))
 
-    elif page > 1 and page < max_page:
-        firsts = range(1, page)[:5]
-        lasts = range(page + 1, max_page)[:5]
-        page_range = firsts + ["...", page, "..."] + lasts
+    # between
+    elif page < total_page:
+        page_range.append(1)
+        page_range.append('...')
+        page_range.extend(range(page - (max_paginated / 2), page + max_paginated / 2))
+        page_range.append('...')
+        page_range.append(total_page)
 
-    elif page == max_page:
-        page_range = [1, "..."]
-        page_range.append(range(max_page_display - 10, max_page_display))
+    # final
+    else:
+        page_range.append(1)
+        page_range.append('...')
+        page_range.extend(range(total_page - max_paginated, total_page + 1))
 
     return page_range
 
