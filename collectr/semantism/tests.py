@@ -31,6 +31,13 @@ class LinkTestCase(unittest.TestCase):
         l = Link(url)
         self.assertEqual(l.clean(), 'http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html')
 
+    def test_url_encode(self):
+        l = Link('')
+
+        ret = l.rebuild_query({'toto': 'tata', 'tutu': ['coin', 'pouet']})
+        self.assertEqual(ret, "tutu=coin&tutu=pouet&toto=tata")
+        ret = l.rebuild_query({'toto': None, 'tutu': ['coin', 'pouet']})
+        self.assertEqual(ret, "tutu=coin&tutu=pouet&toto")
 
 class LinkExtractorTestCase(TransactionTestCase):
 
