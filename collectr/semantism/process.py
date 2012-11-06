@@ -124,7 +124,11 @@ def index_url(link, user_id, link_at, author_name, source_name):
 
     for url in urls:
         link_extractor = LinkExtractor(url)
-        link_extractor.fetch_url_content()
+        try:
+            link_extractor.fetch_url_content()
+        except index_exc.FetchException:
+            logger.warning(u"Can't fetch link")
+            continue
 
         try:
             link_extractor.extract()
