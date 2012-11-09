@@ -138,7 +138,7 @@ $browser->timeout(3);
 # define settings
 Irssi::settings_add_str('collectr', 'collectr_username', "blank");
 Irssi::settings_add_str('collectr', 'collectr_token', "blank");
-Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org/collector/bookmark/secret");
+Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org/collector/bookmark");
 
 # hook on irssi signals
 Irssi::signal_add('message public', 'look_for_urls');
