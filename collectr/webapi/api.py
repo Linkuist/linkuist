@@ -64,6 +64,7 @@ class LinkSumResource(ModelResource):
     url = fields.ToOneField(UrlResource, 'url', full=True)
     authors = fields.ToManyField(AuthorResource, 'authors', full=True)
     tags = fields.ToManyField(TagResource, 'tags', full=True)
+    link_tracking = fields.CharField(attribute='link_tracking')
 
     class Meta:
         queryset = source_models.LinkSum.objects.all()
@@ -77,7 +78,7 @@ class LinkSumResource(ModelResource):
         ordering = ['-pk']
 
     def apply_authorization_limits(self, request, object_list):
-        if request and hasattr(request, 'user'):
+        if request and request.user.is_authenticated():
             return object_list.select_related('url').filter(
                 user=request.user).order_by('-pk')
         return object_list.none()

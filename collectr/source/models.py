@@ -2,8 +2,9 @@
 # python
 
 # django
-from django.db import models
+from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils import timezone
 
 # app
@@ -41,7 +42,8 @@ class Filter(models.Model):
     def __unicode__(self):
         if self.to_delete:
             return u"delete match %s (%d)" % (self.regexp, self.user_id or 0)
-        return u"move match %s to %d (%d)" % (self.regexp, self.to_collection_id, self.user_id or 0)
+        return u"move match %s to %d (%d)" % (
+            self.regexp, self.to_collection_id, self.user_id or 0)
 
 
 class Source(models.Model):
@@ -125,8 +127,13 @@ class LinkSum(models.Model):
 
     def __unicode__(self):
         if self.user_id and self.collection_id:
-            return u'%s - user(%d) collection(%d)' % (self.url, self.user_id, self.collection_id)
+            return u'%s - user(%d) collection(%d)' % (
+                self.url, self.user_id, self.collection_id)
         return u'%s' % self.url
+
+    @property
+    def link_tracking(self):
+        return reverse('link_tracking:track_link', args=(self.pk,))
 
     @property
     def link(self):
