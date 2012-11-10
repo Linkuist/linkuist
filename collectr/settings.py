@@ -110,7 +110,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/collection/'
+LOGIN_REDIRECT_URL = '/app/#/links'
 
 LOGGING = {
     'version': 1,
