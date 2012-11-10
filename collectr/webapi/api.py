@@ -1,12 +1,29 @@
+# django
+from django.contrib.auth.models import User
 
 from tastypie import fields
 from tastypie.resources import ModelResource
 from tastypie.authentication import (MultiAuthentication,
                                      SessionAuthentication,
                                      ApiKeyAuthentication)
+
 from tastypie.authorization import Authorization
 
 from source import models as source_models
+
+
+class UserResource(ModelResource):
+
+    class Meta:
+        queryset = User.objects.all()
+        resource_name = 'auth/user'
+        excludes = ['email', 'password', 'is_superuser']
+        # Add it here.
+        authentication = MultiAuthentication(
+            ApiKeyAuthentication(), SessionAuthentication())
+        authorization = (
+            Authorization()
+        )
 
 
 class UrlResource(ModelResource):

@@ -11,6 +11,7 @@ v1_api.register(api.UrlResource())
 v1_api.register(api.RssResource())
 v1_api.register(api.CollectionResource())
 v1_api.register(api.SourceResource())
+v1_api.register(api.UserResource())
 
 
 urlpatterns = patterns('',
