@@ -1,13 +1,16 @@
 # django
+from django.conf.urls.defaults import url
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 
 from tastypie import fields
-from tastypie.resources import ModelResource
 from tastypie.authentication import (MultiAuthentication,
                                      SessionAuthentication,
                                      ApiKeyAuthentication)
 
 from tastypie.authorization import Authorization
+from tastypie.resources import ModelResource
+from tastypie.utils import trailing_slash
 
 from source import models as source_models
 
@@ -24,6 +27,31 @@ class UserResource(ModelResource):
         authorization = (
             Authorization()
         )
+
+    def override_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/signin%s$" % (self._meta.resource_name, trailing_slash()),
+            self.wrap_view('signin'), name="api_signin"),
+        ]
+
+    def signin(self, request, **kwargs):
+        self.method_check(request, allowed=['post'])
+
+        # Per https://docs.djangoproject.com/en/1.3/topics/auth/#django.contrib.auth.login...
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return self.create_response(request, {'success': True})
+            else:
+                # Return a 'disabled account' error message
+                return self.create_response(request, {'success': False})
+        else:
+            # Return an 'invalid login' error message.
+            return self.create_response(request, {'success': False})
 
 
 class UrlResource(ModelResource):
