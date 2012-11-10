@@ -2,6 +2,7 @@
 from django.conf.urls.defaults import url
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from tastypie import fields
 from tastypie.authentication import (MultiAuthentication,
@@ -145,7 +146,7 @@ class CollectionResource(ModelResource):
 
     def apply_authorization_limits(self, request, object_list):
         if request and hasattr(request, 'user'):
-            return object_list.filter(user=request.user)
+            return object_list.filter(Q(user=request.user) | Q(user__isnull=True))
         return object_list.none()
 
 
