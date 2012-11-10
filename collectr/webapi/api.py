@@ -22,12 +22,6 @@ class UserResource(ModelResource):
         queryset = User.objects.all()
         resource_name = 'auth/user'
         excludes = ['email', 'password', 'is_superuser']
-        # Add it here.
-        authentication = MultiAuthentication(
-            ApiKeyAuthentication(), SessionAuthentication())
-        authorization = (
-            Authorization()
-        )
 
     def override_urls(self):
         return [
@@ -36,24 +30,25 @@ class UserResource(ModelResource):
         ]
 
     def signin(self, request, **kwargs):
-        self.method_check(request, allowed=['post'])
+        try:
+            self.method_check(request, allowed=['post'])
 
-        # Per https://docs.djangoproject.com/en/1.3/topics/auth/#django.contrib.auth.login...
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return self.create_response(request, {'success': True})
+            # Per https://docs.djangoproject.com/en/1.3/topics/auth/#django.contrib.auth.login...
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return self.create_response(request, {'success': True})
+                else:
+                    # Return a 'disabled account' error message
+                    return self.create_response(request, {'success': False})
             else:
-                # Return a 'disabled account' error message
+                # Return an 'invalid login' error message.
                 return self.create_response(request, {'success': False})
-        else:
-            # Return an 'invalid login' error message.
-            return self.create_response(request, {'success': False})
-
+        except Exception, e:
+            print e
 
 class UrlResource(ModelResource):
 
