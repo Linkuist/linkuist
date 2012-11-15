@@ -10,7 +10,7 @@ from tastypie.authentication import (MultiAuthentication,
                                      ApiKeyAuthentication)
 
 from tastypie.authorization import Authorization
-from tastypie.resources import ModelResource
+from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie.utils import trailing_slash
 
 from source import models as source_models
@@ -100,31 +100,6 @@ class AuthorResource(ModelResource):
         ordering = ['-pk']
 
 
-class LinkSumResource(ModelResource):
-
-    url = fields.ToOneField(UrlResource, 'url', full=True)
-    authors = fields.ToManyField(AuthorResource, 'authors', full=True)
-    tags = fields.ToManyField(TagResource, 'tags', full=True)
-    link_tracking = fields.CharField(attribute='link_tracking')
-
-    class Meta:
-        queryset = source_models.LinkSum.objects.all()
-        authentication = MultiAuthentication(
-            ApiKeyAuthentication(), SessionAuthentication())
-        authorization = (
-            Authorization()
-        )
-
-        resource_name = 'linksum'
-        ordering = ['-pk']
-
-    def apply_authorization_limits(self, request, object_list):
-        if request and request.user.is_authenticated():
-            return object_list.select_related('url').filter(
-                user=request.user).order_by('-pk')
-        return object_list.none()
-
-
 class CollectionResource(ModelResource):
 
     class Meta:
@@ -138,10 +113,40 @@ class CollectionResource(ModelResource):
         resource_name = 'collection'
         ordering = ['pk']
         exclude = ['user']
+        filtering = {"name": [ "exact", "in" ] }
 
     def apply_authorization_limits(self, request, object_list):
         if request and hasattr(request, 'user'):
             return object_list.filter(Q(user=request.user) | Q(user__isnull=True))
+        return object_list.none()
+
+
+class LinkSumResource(ModelResource):
+
+    url = fields.ToOneField(UrlResource, 'url', full=True)
+    authors = fields.ToManyField(AuthorResource, 'authors', full=True)
+    tags = fields.ToManyField(TagResource, 'tags', full=True)
+    link_tracking = fields.CharField(attribute='link_tracking')
+    collection = fields.ToOneField(CollectionResource, 'collection', full=True)
+
+    class Meta:
+        queryset = source_models.LinkSum.objects.all()
+        authentication = MultiAuthentication(
+            ApiKeyAuthentication(), SessionAuthentication())
+        authorization = (
+            Authorization()
+        )
+        filtering = {
+            'collection': ALL_WITH_RELATIONS,
+        }
+
+        resource_name = 'linksum'
+        ordering = ['-pk']
+
+    def apply_authorization_limits(self, request, object_list):
+        if request and request.user.is_authenticated():
+            return object_list.select_related('url').filter(
+                user=request.user).order_by('-pk')
         return object_list.none()
 
 
