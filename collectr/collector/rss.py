@@ -6,7 +6,6 @@
 
 import feedparser
 import os
-import pprint
 import sys
 import time
 import urlparse
@@ -51,9 +50,9 @@ def fetch_rss():
                     continue
                 date_published = datetime(*date_pub[:-3])
 
-
-                for user in rss_feed.users.all():
-                    q.enqueue(index_url, entry['link'], user.pk, date_published, urlp.netloc, "Rss")
+                user_id_list = list(rss_feed.users.values_list('id', flat=True))
+                q.enqueue(index_url, entry['link'], user_id_list,
+                        date_published, urlp.netloc, "Rss")
             rss_feed.etag = feed['etag']
             rss_feed.save()
             time.sleep(1)

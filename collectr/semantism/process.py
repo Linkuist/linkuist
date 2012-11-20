@@ -100,7 +100,8 @@ def find_collection(linksum, filter_list):
 
 def index_url(link, user_id, link_at, author_name, source_name):
     """Entry point to store our link & linksum into the database"""
-    user_id = int(user_id)
+    if not isinstance(user_id, (list, tuple)):
+        user_id = [int(user_id)]
 
     urls = find_urls(link)
     if not urls:
@@ -108,7 +109,7 @@ def index_url(link, user_id, link_at, author_name, source_name):
         return
 
     #loads our filters
-    filters = Filter.objects.filter(Q(user__pk=user_id) | Q(user__isnull=True))
+    filters = Filter.objects.filter(Q(user__pk__in=user_id) | Q(user__isnull=True))
 
     try:
         source = sources[source_name.lower()]
@@ -143,19 +144,21 @@ def index_url(link, user_id, link_at, author_name, source_name):
             logger.warning(u"can't create url for link {0}".format(url), exc_info=True)
             continue
 
-        try:
-            links_numb = LinkSum.objects.get(url=url_instance, user__id=user_id)
-            links_numb.recommanded += 1
-            links_numb.save()
-            links_numb.authors.add(author)
-            logger.info(u"linksum already in database")
-            continue
+        users_lsums = dict([(user, None) for user in user_id])
+        for user in user_id:
+            try:
+                links_numb = LinkSum.objects.get(url=url_instance, user__id=user)
+                links_numb.recommanded += 1
+                links_numb.save()
+                links_numb.authors.add(author)
+                del users_lsums[user]
+                logger.info(u"linksum already in database")
 
-        except LinkSum.DoesNotExist:
-            pass
+            except LinkSum.DoesNotExist:
+                pass
 
         lsum = LinkSum(url=url_instance, collection_id=default_collection.pk,
-                       read=False, user_id=user_id)
+                       read=False)
 
         try:
             find_collection(lsum, filters)
@@ -164,15 +167,17 @@ def index_url(link, user_id, link_at, author_name, source_name):
             logger.info(u"Link not saved, filtered")
             continue
 
-        try:
-            lsum.save()
-            lsum.authors.add(author)
-            lsum.sources.add(source)
-            for tags in url_instance.tags.all():
-                lsum.tags.add(tags)
+        for user in users_lsums:
+            try:
+                lsum.user_id = user
+                lsum.save()
+                lsum.authors.add(author)
+                lsum.sources.add(source)
+                for tags in url_instance.tags.all():
+                    lsum.tags.add(tags)
 
-        except Exception, exc:
-            logger.exception(exc)
-        logger.info(u"Added new link for user {0}".format(user_id))
+            except Exception, exc:
+                logger.exception(exc)
+            logger.info(u"Added new link for user {0}".format(user_id))
 
         return lsum
