@@ -141,6 +141,13 @@ class LinkSum(models.Model):
             return self.url.link
         return None
 
+class HotTopic(models.Model):
+    """A Hot Topic is when a subject comes more than once"""
+
+    user = models.ForeignKey(User)
+    sums = models.ManyToManyField(LinkSum)
+    title = models.TextField()
+
 
 class Rss(models.Model):
     """The simple RSS model"""
