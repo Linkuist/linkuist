@@ -48,7 +48,9 @@
           <p> {% for tag in link.tags.all %}
             <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
-            {% if link.url.image %}
+            {% if link.url.html %}
+            {{ link.url.html|safe }}
+            {% elif link.url.image %}
             <img src="{{ link.url.image }}" />
             {% endif %}
           

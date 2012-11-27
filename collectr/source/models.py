@@ -83,6 +83,7 @@ class Url(models.Model):
     tags = models.ManyToManyField(Tag)
     raw_tags = models.TextField()
     summary = models.TextField(null=True)
+    html = models.TextField(null=True, blank=True)
     content = models.TextField()
     image = models.TextField(null=True, blank=True)
     inserted_at = models.DateTimeField(default=timezone.now)

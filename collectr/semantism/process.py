@@ -24,13 +24,9 @@ from source.models import (Author, Source, LinkSum, Filter,
                            Collection, Url, UrlViews)
 
 # semantism
-try:
-    from semantism.embed import oembed
-except Exception, exc:
-    oembed = {}
 from semantism.link import LinkExtractor
 from semantism import exceptions as index_exc
-
+from semantism import oembed
 
 logger = logging.getLogger('index_url')
 logger.setLevel(logging.DEBUG)
@@ -53,6 +49,16 @@ def find_urls(content):
     return urls
 
 
+def update_from_oembed(url_object):
+    result = oembed.resolve(url_object.link)
+    print result
+    if 'html' in result:
+        url_object.html = result['html']
+
+    if 'thumbnail_url' in result:
+        url_object.image = result['thumbnail_url']
+
+
 def create_url(link_extractor):
     url = None
     try:
@@ -63,24 +69,22 @@ def create_url(link_extractor):
         pass
 
     uv = UrlViews.objects.create(count=0)
+
+    url = Url(
+        link=link_extractor.url, views=uv,
+        summary=link_extractor.summary,
+        content=link_extractor.full_content,
+        image=link_extractor.picture,
+        title=link_extractor.title)
+
+
+    update_from_oembed(url)
+
     try:
-        url = Url.objects.create(
-            link=link_extractor.url, views=uv,
-            summary=link_extractor.summary,
-            content=link_extractor.full_content,
-            image=link_extractor.picture,
-            title=link_extractor.title)
-
+        url.save()
     except Exception, exc:
-        logger.exception(u"Can't create the Url object")
+        logger.exception(u"Can't create the Url object", exc)
         raise index_exc.UrlCreationException(u"Can't create the Url object")
-
-    # todo: tags
-    # if link_extractor.is_html_page():
-    #     tags = link_extractor.find_tags()
-    #     url.create_tags(tags)
-
-    url.save()
 
     return url
 
