@@ -51,7 +51,8 @@ def find_urls(content):
 
 def update_from_oembed(url_object):
     result = oembed.resolve(url_object.link)
-    print result
+    if not result:
+        return
     if 'html' in result:
         url_object.html = result['html']
 
