@@ -53,12 +53,16 @@ def update_from_oembed(url_object):
     result = oembed.resolve(url_object.link)
     if not result:
         return
+
+    if result['type'] == 'photo':
+        url_object.image = result['url']
+
+    if result['type'] == 'video':
+        if 'thumbnail_url' in result:
+            url_object.image = result['thumbnail_url']
+
     if 'html' in result:
         url_object.html = result['html']
-
-    if 'thumbnail_url' in result:
-        url_object.image = result['thumbnail_url']
-
 
 def create_url(link_extractor):
     url = None
@@ -184,5 +188,5 @@ def index_url(link, user_id, link_at, author_name, source_name):
             except Exception, exc:
                 logger.exception(exc)
             logger.info(u"Added new link for user {0}".format(user_id))
-
-        return lsum
+        print lsum.url.pk
+        print lsum.pk
