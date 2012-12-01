@@ -42,11 +42,10 @@ def resolve(url, maxwidth=None, maxheight=None):
     try:
         results = requests.get(provider_url, params=params)
     except Exception, exc:
-        print exc
         logger.info(u"Can't resolve oembed for {0} : {1}".format(url, unicode(exc)))
         raise OEmbedResolutionException()
     try:
         return json.loads(results.content)
     except ValueError:
-        logger.info(u"Can't resolve oembed for {0} : Json decode error".format(url))
+        logger.info(u"Can't resolve oembed for {0} : Json decode error".format(url), exc_info=True)
         return None
