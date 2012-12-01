@@ -120,7 +120,11 @@ class LinkExtractor(object):
         if url_parse.netloc not in ('t.co', 'bit.ly'):
             headers['User-Agent'] = DEFAULT_USER_AGENT
 
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers)
+        except Exception:
+            raise index_exc.FetchException(
+                u"Can't crawl the url {0}".format(url))
         self.url = url = Link(response.url).clean()
         if response.status_code >= 400:
             raise index_exc.FetchException(
