@@ -51,11 +51,12 @@ def fetch_rss():
                 date_published = datetime(*date_pub[:-3])
 
                 user_id_list = list(rss_feed.users.values_list('id', flat=True))
+                time.sleep(1)
+
                 q.enqueue(index_url, entry['link'], user_id_list,
                         date_published, urlp.netloc, "Rss")
             rss_feed.etag = feed['etag']
             rss_feed.save()
-            time.sleep(1)
         else:
             print "feed %s not updated" % rss_feed.link
 
