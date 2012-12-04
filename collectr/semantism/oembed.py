@@ -5,7 +5,7 @@ import requests
 
 
 PROVIDERS = {
-    'youtube': ('http://www.youtube.com/oembed', ["youtube\\.com/watch.+v=[\\w-]+&?"]),
+    'youtube': ('http://www.youtube.com/oembed', [".*youtube.*\watch\?v\=.*"]),
     'vimeo': ('http://vimeo.com/api/oembed.json', ['^http:\/\/.vimeo\.com\/\d+', 'http:\/\/www\.vimeo\.com\/groups\/.*\/videos\/.*', 'http:\/\/www\.vimeo\.com\/.*', 'http:\/\/vimeo\.com\/groups\/.*\/videos\/.*', 'http:\/\/vimeo\.com\/.*']),
     'flickr': ('http://flickr.com/services/oembed', ['flickr\\.com/photos/[-.\\w@]+/\\d+/?']),
     'instagram': ('http://api.instagram.com/oembed', ['^http:\/\/instagr.am\/p\/.*', '^http:\/\/instagram\.com\/p\/.*']),
@@ -29,7 +29,7 @@ def get_provider(url):
     return None
 
 
-def resolve(url, maxwidth=None, maxheight=None):
+def resolve(url, maxwidth=400, maxheight=None):
     provider_url = get_provider(url)
     if not provider_url:
         return None
