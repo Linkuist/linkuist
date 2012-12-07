@@ -22,8 +22,8 @@ class Command(BaseCommand):
         scheduler = Scheduler('rss_collector', connection=Redis('127.0.0.1', port=6379))
         scheduler.enqueue_periodic(
             datetime.datetime.now(),
-            600,
-            2000,
+            1200,
+            20000,
             fetch_rss,
         )
 
