@@ -36,11 +36,13 @@ def search(request, template="webfront/collection.html"):
               (source_linksum.url_id = source_url.id)
            AND
               to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
+           AND "source_linksum"."user_id" = %s
            ORDER BY "source_linksum"."inserted_at" DESC;
-         """, [querystring])
+         """, [querystring, request.user.id])
 
     data = {
         'links': links,
+        'query': querystring,
         'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
         'sources': Source.objects.all(),
     }
