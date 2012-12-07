@@ -5,6 +5,7 @@ import requests
 
 
 PROVIDERS = {
+    'imgur': ('http://api.imgur.com/oembed', [".*imgur.com\/.*"]),
     'youtube': ('http://www.youtube.com/oembed', [".*youtube.*\watch\?v\=.*"]),
     'vimeo': ('http://vimeo.com/api/oembed.json', ['^http:\/\/.vimeo\.com\/\d+', 'http:\/\/www\.vimeo\.com\/groups\/.*\/videos\/.*', 'http:\/\/www\.vimeo\.com\/.*', 'http:\/\/vimeo\.com\/groups\/.*\/videos\/.*', 'http:\/\/vimeo\.com\/.*']),
     'flickr': ('http://flickr.com/services/oembed', ['flickr\\.com/photos/[-.\\w@]+/\\d+/?']),
