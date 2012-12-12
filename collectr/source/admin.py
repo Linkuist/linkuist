@@ -26,7 +26,8 @@ class CollectionAdmin(admin.ModelAdmin):
     pass
 
 class LinkSumAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'inserted_at', 'url')
+    list_filter = ('user',)
 
 class SourceAdmin(admin.ModelAdmin):
     pass
