@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %} - Home{% endblock title %}
+
+{% block sidebar %}
+<ul class="nav nav-list">
+    <li class="nav-header"><a href="{% url userprofile:home %}">User profile</a></li>
+    <li class="active"><a href="#">Link</a></li>
+    <li><a href="{% url userprofile:rss %}">Rss feeds</a></li>
+    <li><a href="{% url userprofile:filters %}">Filters</a></li>
+</ul>
+
+{% endblock sidebar %}
+
+
+{% block content %}
+
+<div class="hero-unit">
+        <h1>Hello, world!</h1>
+        <p>{% blocktrans %}This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.{% endblocktrans %}</p>
+        <p><a class="btn btn-primary btn-large">{% trans 'Learn more' %} &raquo;</a></p>
+</div>
+
+{% endblock content %}
+
+

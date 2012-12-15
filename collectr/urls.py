@@ -19,5 +19,6 @@ urlpatterns = patterns('',
     url(r'', include('webfront.urls', namespace='webfront')),
     url(r'', include('link_tracking.urls', namespace='link_tracking')),
     url(r'^collector/', include('collector.urls', namespace='collector')),
+    url(r'^profile/', include('userprofile.urls', namespace='userprofile')),
     url(r'^api/', include('webapi.urls')),
 )
