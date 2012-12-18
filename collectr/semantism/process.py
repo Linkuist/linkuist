@@ -52,6 +52,7 @@ def find_urls(content):
 def update_from_oembed(url_object):
     result = oembed.resolve(url_object.link)
     if not result:
+        logger.info(u"No oembed")
         return
 
     if result['type'] == 'photo':
@@ -81,7 +82,6 @@ def create_url(link_extractor):
         content=link_extractor.full_content,
         image=link_extractor.picture,
         title=link_extractor.title)
-
 
     update_from_oembed(url)
 
@@ -136,15 +136,15 @@ def index_url(link, user_id, link_at, author_name, source_name):
         link_extractor = LinkExtractor(url)
         try:
             link_extractor.fetch_url_content()
-        except index_exc.FetchException:
-            logger.warning(u"Can't fetch link")
+        except index_exc.FetchException, exc:
+            print exc
+            logger.warning(u"Can't fetch link", exc_info=True)
             continue
 
         try:
             link_extractor.extract()
         except Exception, exc:
-            logger.warning(u"Can't extract url_content from %s" % url)
-            logger.exception(exc)
+            logger.warning(u"Can't extract url_content from %s" % url, exc_info=True)
             continue
 
         try:
