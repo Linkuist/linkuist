@@ -87,8 +87,8 @@ def create_url(link_extractor):
 
     try:
         url.save()
-    except Exception, exc:
-        logger.exception(u"Can't create the Url object", exc)
+    except Exception:
+        logger.exception(u"Can't create the Url object")
         raise index_exc.UrlCreationException(u"Can't create the Url object")
 
     return url
@@ -136,9 +136,8 @@ def index_url(link, user_id, link_at, author_name, source_name):
         link_extractor = LinkExtractor(url)
         try:
             link_extractor.fetch_url_content()
-        except index_exc.FetchException, exc:
-            print exc
-            logger.warning(u"Can't fetch link", exc_info=True)
+        except index_exc.FetchException:
+            logger.exception(u"Can't fetch link")
             continue
 
         try:
