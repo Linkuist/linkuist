@@ -205,6 +205,7 @@ def collection_tag(request, tag, template="webfront/collection.html"):
 def collection_user(request, user, source, template="webfront/collection.html"):
     show_read = True
     qs = LinkSum.objects.select_related('authors')\
+                        .distinct()\
                         .filter(user__id=request.user.id)\
                         .filter(authors__name=user)\
                         .filter(authors__source=source)\
