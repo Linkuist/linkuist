@@ -57,8 +57,8 @@ class TwitterListener(tweepy.streaming.StreamListener):
     def on_status(self, status):
         if hasattr(status, 'entities') and 'urls' in status.entities:
             logger.info("adding task called %s for %s" % (datetime.now(), sys.argv[1]))
-            self.q.enqueue(index_url, status, self.user.pk, datetime.now(),
-                    status.user.screen_name, "twitter")
+            self.q.enqueue_call(func=index_url, args=(status, self.user.pk, datetime.now(),
+                    status.user.screen_name, "twitter"), timeout=60)
         else:
             logger.info("tweet ignored")
 

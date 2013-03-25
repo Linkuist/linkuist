@@ -53,8 +53,8 @@ def fetch_rss():
                 user_id_list = list(rss_feed.users.values_list('id', flat=True))
                 time.sleep(1)
 
-                q.enqueue(index_url, entry['link'], user_id_list,
-                        date_published, urlp.netloc, "Rss")
+                q.enqueue_call(func=index_url, args=(entry['link'], user_id_list,
+                        date_published, urlp.netloc, "Rss"), timeout=60)
             rss_feed.etag = feed['etag']
             rss_feed.save()
         else:

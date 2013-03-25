@@ -29,7 +29,8 @@ def secret_bookmark(request, username):
     except User.DoesNotExist:
         return HttpResponse(status=403)
 
-    links_queue.enqueue(index_url, url, user.id, datetime.now(), link_from, source)
+    links_queue.enqueue_call(func=index_url, args=(url, user.id, datetime.now(),
+        link_from, source), timeout=60)
 
     return HttpResponse(status=201)
 
