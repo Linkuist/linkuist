@@ -38,6 +38,7 @@ The project requires a lots of dependancies:
   * tweepy in version 1.9
   * webarticle2text
   * tastypie in version 0.9.12
+  * praw in version 2.1.0
 
 Configuration
 -------------
@@ -46,6 +47,19 @@ As it is a django project, you need to edit your collectr/settings.py to add you
 You should probably add your own TWITTER_CONSUMER_KEY and your TWITTER_CONSUMER_SECRET informations.
 
 Oh, and your own SECRET_KEY  too \o/
+
+
+Processes
+---------
+
+This project requires a lot of asynchronous process to run. I usually have 6 process:
+
+ * The uwsgi proceess
+ * The ./manage.py twitter_collector
+ * The ./manage.py reddit_collector
+ * The rqworker rss_collector which periodically check for new rss
+ * The rqworker link_indexing -v which unqueue link from redis
+ * The rqscheduler which schedule new rss fetch
 
 
 Notable projects
