@@ -165,3 +165,15 @@ class Rss(models.Model):
         return self.name
 
 
+class Reddit(models.Model):
+    """Store the last post from reddit"""
+    subreddit = models.CharField(max_length=128)
+    users = models.ManyToManyField(User)
+    uid = models.CharField(max_length=128, null=True, blank=True)
+
+    class Meta:
+        verbose_name = u'Reddit'
+        verbose_name_plural = u'Reddits'
+
+    def __unicode__(self):
+        return self.subreddit

@@ -77,7 +77,7 @@ if __name__ == "__main__":
         print "User %s does not exist" % user
         sys.exit()
 
-    auth_dict = UserSocialAuth.objects.values().get(user__id=user.pk)['extra_data']
+    auth_dict = UserSocialAuth.objects.values().get(user__id=user.pk, provider='twitter')['extra_data']
     d = json.loads(auth_dict)
     access_key = d['access_token']
     d = dict([x.split("=") for x in access_key.split("&")])

@@ -93,6 +93,7 @@ INSTALLED_APPS = (
 
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.twitter.TwitterBackend',
+    'social_auth.backends.reddit.RedditBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -144,6 +145,10 @@ LOGGING = {
 
 TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
+
+REDDIT_APP_ID = ''
+REDDIT_API_SECRET = ''
+REDDIT_AUTH_EXTRA_ARGUMENTS = {'duration': 'permanent'}
 
 SOUTH_TESTS_MIGRATE = False
 

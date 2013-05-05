@@ -35,6 +35,9 @@ class SourceAdmin(admin.ModelAdmin):
 class RssAdmin(admin.ModelAdmin):
     pass
 
+class RedditAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(models.Filter, FilterAdmin)
 admin.site.register(models.LinkSum, LinkSumAdmin)
 admin.site.register(models.Source, SourceAdmin)
@@ -43,5 +46,5 @@ admin.site.register(models.Url, UrlAdmin)
 admin.site.register(models.Tag, TagAdmin)
 admin.site.register(models.UrlViews, UrlViewsAdmin)
 admin.site.register(models.Rss, RssAdmin)
-
+admin.site.register(models.Reddit, RedditAdmin)
 admin.site.unregister(sites.models.Site)
