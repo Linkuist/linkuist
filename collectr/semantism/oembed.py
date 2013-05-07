@@ -8,7 +8,7 @@ PROVIDERS = {
     'imgur': {
         'url': 'http://api.imgur.com/oembed',
         'regex': [".*imgur.com\/.*"],
-        'maxwidth': 500,
+        'maxwidth': 800,
     },
     'youtube': {
         'url': 'http://www.youtube.com/oembed',
