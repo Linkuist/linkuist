@@ -66,7 +66,6 @@ class TwitterListener(tweepy.streaming.StreamListener):
         logger.error("Twitter error with status code %s", status_code)
 
     def on_status(self, status):
-        print("received status")
         if hasattr(status, 'entities') and 'urls' in status.entities:
             logger.info("adding task called %s for %s" % (datetime.now(), self.user.username))
             self.q.enqueue_call(func=index_url, args=(status, self.user.pk, datetime.now(),
