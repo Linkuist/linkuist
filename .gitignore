@@ -3,3 +3,11 @@
 settings_local.py
 *.pyc
 *.db
+
+build
+css
+js
+env
+neo4j
+old
+backup
