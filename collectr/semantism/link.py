@@ -10,7 +10,7 @@ import os
 import urlparse
 
 
-DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_1) AppleWebKit/537.4 (KHTML, like Gecko) Chrome/22.0.1229.94 Safari/537.4"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17"
 
 # 3rdparty
 import requests
@@ -129,7 +129,7 @@ class LinkExtractor(object):
         if response.status_code >= 400:
             raise index_exc.FetchException(
                 u"Got a {0} status code while fetching {1}".format(
-                    self.status_code, url))
+                    response.status_code, url))
 
         self.response = response
 
