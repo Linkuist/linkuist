@@ -59,6 +59,7 @@ class Command(BaseCommand):
 class TwitterListener(tweepy.streaming.StreamListener):
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
         super(TwitterListener, self).__init__(*args, **kwargs)
         self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
@@ -90,8 +91,7 @@ def run_process(username):
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
 
-    TwitterListener.user = user
-    listener = TwitterListener(api=tweepy.API(auth_handler=auth))
+    listener = TwitterListener(api=tweepy.API(auth_handler=auth), user=user)
     stream = tweepy.streaming.Stream(auth, listener, secure=True)
     while True:
         try:
