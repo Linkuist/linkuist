@@ -49,14 +49,14 @@ def search(request, template="webfront/collection.html"):
     return render(request, template, data)
 
 
-def get_display_paginate_item(paginator, page):
+def get_display_paginate_item(paginator, page, max_paginated=5):
     """Prints nicely the range of paginating"""
-    max_paginated = 5
+    
     total_page = paginator.num_pages
     page_range = []
 
     # page starting
-    if page == 1:
+    if page <= max_paginated:
         page_range = range(1, max_paginated)
         page_range.append('...')
         page_range.extend(range(total_page - max_paginated, max_paginated + 1))
@@ -70,7 +70,7 @@ def get_display_paginate_item(paginator, page):
         page_range.append(total_page)
 
     # final
-    else:
+    elif page >= total_page - max_paginated:
         page_range.append(1)
         page_range.append('...')
         page_range.extend(range(total_page - max_paginated, total_page + 1))
