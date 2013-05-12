@@ -7,13 +7,13 @@
 <ul class="nav nav-list">
   <li class="nav-header">{% trans 'Collections' %}</li>
   {% for col in collections %}
-  <li><a href="{% url webfront:collection col.name %}">{{ col.name }}</a></li>
+  <li><a href="{% url 'webfront:collection' col.name %}">{{ col.name }}</a></li>
   {% endfor %}
 </ul>
 <ul class="nav nav-list">
   <li class="nav-header">{% trans 'Sources' %}</li>
   {% for source in sources %}
-  <li><a href="{% url webfront:collection_source source.slug %}">{{ source.name }}</a></li>
+  <li><a href="{% url 'webfront:collection_source' source.slug %}">{{ source.name }}</a></li>
   {% endfor %}
 </ul>
 
@@ -24,7 +24,7 @@
       <div class="row-fluid">
 {% for link in links %}
         <div class="span6">
-            <h3><a href="{% url link_tracking:track_link link.pk %}" target="_blank">{{ link.url.title }}</a>
+            <h3><a href="{% url 'link_tracking:track_link' link.pk %}" target="_blank">{{ link.url.title }}</a>
 
               {% if link.read %}
               <i class="icon-search"></i>
@@ -32,21 +32,21 @@
               <i class="icon-envelope"></i>
               {% endif %}
             </h3>
-            <p><a href="http://twitter.com/share?url=http://{{ request.META.HTTP_HOST }}{% url link_tracking:track_link link.pk %}&text=&quot;{{link.url.title}}&quot;" target='_blank'>tweet</a></p>
+            <p><a href="http://twitter.com/share?url=http://{{ request.META.HTTP_HOST }}{% url 'link_tracking:track_link' link.pk %}&text=&quot;{{link.url.title}}&quot;" target='_blank'>tweet</a></p>
             {% if not link.author_id %}
             {% for author in link.authors.all %}
-                <a href="{% url webfront:collection_user author.name, author.source_id %}">
+                <a href="{% url 'webfront:collection_user' author.name author.source_id %}">
                     <span class="label label-success">{{ author.name }}</span>
                 </a>
             {% endfor %}
             {% else %}
-                <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
+                <a href="{% url 'webfront:collection_user' link.author.name link.author.source_id %}">
                     <span class="label label-success">{{ link.author.name }}</span>
                 </a>
             {% endif %}
           <p> on {{ link.inserted_at }}</p>
           <p> {% for tag in link.tags.all %}
-            <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
+            <a href="{% url 'webfront:collection_tag' tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
             {% if link.url.html %}
             {{ link.url.html|safe }}
@@ -72,45 +72,5 @@
 
 
 {% block pagination %}
-
-<div class="pagination">
-  <ul>
-    {% if paginator.has_previous %}
-    <li class="previous"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
-    {% else %}
-    <li class="previous disabled"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
-
-    {% endif %}
-    {% for page_num in page_range %}
-    {% if page_num == "..." %}
-    <li class="disabled"><a href="?page={{ page_num}}">{{ page_num }}</a>
-    {% else %}
-    <li><a href="?page={{ page_num}}">{{ page_num }}</a>
-    {% endif %}
-    {% endfor %}
-    {% if paginator.has_next %}
-    <li class="next"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
-    {% else %}
-    <li class="next disabled"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
-    {% endif %}
-   
-  </ul>
-</div>
-
-
-{% comment %}
-{{ page_range|pprint }}
-<div class="pager">
-  <ul class="pager">
-    {% if paginator.has_previous %}
-    <li class="previous"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a>
-    {% endif %}
-    <li class=".disabled"><a href="?page={{ paginator.number }}"> {{ paginator.number }} </a></li>
-
-    {% if paginator.has_next %}
-    <li class="next"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a>
-    {% endif %}
-  </ul>
-</div>
-{% endcomment %}
+{% include 'webfront/pagination.html' %}
 {% endblock pagination %}

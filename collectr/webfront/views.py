@@ -79,7 +79,7 @@ def get_display_paginate_item(paginator, page, max_paginated=5):
 
 
 @login_required
-def links_today(request, collection=None, template="webfront/links_today.html"):
+def links_today(request, collection=None, template="webfront/collection.html"):
     show_read = True
     now = datetime.now()
     yesterday = datetime.now() - timedelta(days=1)

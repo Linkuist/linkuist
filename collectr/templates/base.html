@@ -43,14 +43,14 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="{% url webfront:home %}">Linkuist</a>
-          <form class="navbar-search pull-left" action="{% url webfront:search %}">
+          <a class="brand" href="{% url 'webfront:home' %}">Linkuist</a>
+          <form class="navbar-search pull-left" action="{% url 'webfront:search' %}">
             <input name="query" type="text" class="search-query span2" placeholder="Search">
           </form>
           <div class="btn-group pull-right">
             {% if not user.is_authenticated %}
             <ul class="nav">
-                <li class="active"><a href="{% url webfront:login %}">{% trans 'login' %}</a></li>
+                <li class="active"><a href="{% url 'webfront:login' %}">{% trans 'login' %}</a></li>
             </ul>
             {% else %}
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
@@ -58,9 +58,9 @@
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-              <li><a href="{% url userprofile:home %}">Profile</a></li>
+              <li><a href="{% url 'userprofile:home' %}">Profile</a></li>
               <li class="divider"></li>
-              <li><a href="{% url webfront:logout %}">Sign Out</a></li>
+              <li><a href="{% url 'webfront:logout' %}">Sign Out</a></li>
           </ul>
             {% endif %}
           </div>

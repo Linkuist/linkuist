@@ -7,13 +7,13 @@
 <ul class="nav nav-list">
   <li class="nav-header">{% trans 'Collections' %}</li>
   {% for col in collections %}
-  <li><a href="{% url webfront:collection col.name %}">{{ col.name }}</a></li>
+  <li><a href="{% url 'webfront:collection' col.name %}">{{ col.name }}</a></li>
   {% endfor %}
 </ul>
 <ul class="nav nav-list">
   <li class="nav-header">{% trans 'Sources' %}</li>
   {% for source in sources %}
-  <li><a href="{% url webfront:collection_source source.slug %}">{{ source.name }}</a></li>
+  <li><a href="{% url 'webfront:collection_source' source.slug %}">{{ source.name }}</a></li>
   {% endfor %}
 </ul>
 
@@ -34,24 +34,24 @@
             </h3>
             {% if not link.author_id %}
             {% for author in link.authors.all %}
-                <a href="{% url webfront:collection_user author.name, author.source_id %}">
+                <a href="{% url 'webfront:collection_user' author.name, author.source_id %}">
                     <span class="label label-success">{{ author.name }}</span>
                 </a>
             {% endfor %}
             {% else %}
-                <a href="{% url webfront:collection_user link.author.name, link.author.source_id %}">
+                <a href="{% url 'webfront:collection_user' link.author.name, link.author.source_id %}">
                     <span class="label label-success">{{ link.author.name }}</span>
                 </a>
             {% endif %}
           <p> on {{ link.inserted_at }}</p>
           <p> {% for tag in link.get_tags %}
-            <a href="{% url webfront:collection_tag tag %}"><span class="label label-info">{{ tag }}</span></a>
+            <a href="{% url 'webfront:collection_tag' tag %}"><span class="label label-info">{{ tag }}</span></a>
            {% endfor %} </p>
           {% if not link.summary == "None" %}
           <p>{{ link.summary|safe }}</p>
           {% endif %}
           
-          <p><a class="btn" href="{% url link_tracking:track_link link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
+          <p><a class="btn" href="{% url 'link_tracking:track_link' link.pk %}" target="_blank">{% trans 'open link' %} &raquo;</a></p>
         </div><!--/span-->
     {% if forloop.counter|divisibleby:"3" %}
     </div><!--/row-->

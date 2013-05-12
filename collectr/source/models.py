@@ -152,7 +152,7 @@ class HotTopic(models.Model):
 
 class Rss(models.Model):
     """The simple RSS model"""
-    link = models.URLField(verify_exists=False, max_length=1024, unique=True)
+    link = models.URLField(max_length=1024, unique=True)
     name = models.CharField(max_length=128)
     users = models.ManyToManyField(User)
     etag = models.CharField(max_length=128, null=True, blank=True)

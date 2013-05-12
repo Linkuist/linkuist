@@ -5,10 +5,10 @@
 
 {% block sidebar %}
 <ul class="nav nav-list">
-    <li class="nav-header"><a href="{% url userprofile:home %}">User profile</a></li>
+    <li class="nav-header"><a href="{% url 'userprofile:home' %}">User profile</a></li>
     <li class="active"><a href="#">Link</a></li>
-    <li><a href="{% url userprofile:rss %}">Rss feeds</a></li>
-    <li><a href="{% url userprofile:filters %}">Filters</a></li>
+    <li><a href="{% url 'userprofile:rss' %}">Rss feeds</a></li>
+    <li><a href="{% url 'userprofile:filters' %}">Filters</a></li>
 </ul>
 {% endblock sidebar %}
 
