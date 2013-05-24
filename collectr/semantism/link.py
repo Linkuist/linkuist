@@ -14,7 +14,7 @@ DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit
 
 # 3rdparty
 import requests
-from goose.Goose import Goose
+from goose import Goose
 
 # local
 from semantism import exceptions as index_exc
