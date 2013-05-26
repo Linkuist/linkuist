@@ -37,7 +37,7 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
         queue_name = args[0] if args else 'link_indexing'
 
-        with Connection():
+        with Connection(redis.Redis(**settings.RQ_DATABASE)):
             queue = Queue(queue_name)
             peon = Worker(queue)
 
