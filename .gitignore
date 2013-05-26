@@ -3,6 +3,8 @@
 settings_local.py
 *.pyc
 *.db
+*.swp
+*~
 
 build
 css
