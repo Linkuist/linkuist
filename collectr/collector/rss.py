@@ -5,6 +5,7 @@
 """
 
 import feedparser
+import logging
 import os
 import sys
 import time
@@ -34,6 +35,7 @@ from rq import Queue, Connection
 
 
 def fetch_rss():
+    logger = logging.getLogger(__name__)
     rss_feeds = Rss.objects.all()
     with Connection(redis.Redis(**settings.RQ_DATABASE)):
         q = Queue('link_indexing')
@@ -43,11 +45,12 @@ def fetch_rss():
 
             urlp = urlparse.urlparse(rss_feed.link)
             if 'etag' in feed and feed['etag'] != rss_feed.etag:
-                print "new entry in feed %s" % rss_feed.link
+                logger.info('New entry in feed %s', rss_feed.link)
                 for entry in feed.entries:
                     date_pub = entry.get('published_parsed') or entry.get('updated_parsed')
                     if not date_pub:
-                        print "can't find date_pub"
+                        logger.warning('Cannot find date_pub in feed %s',
+                                       rss_feed.link)
                         continue
                     date_published = datetime(*date_pub[:-3])
 
@@ -59,7 +62,9 @@ def fetch_rss():
                 rss_feed.etag = feed['etag']
                 rss_feed.save()
             else:
-                print "feed %s not updated" % rss_feed.link_at
+                logger.info('Feed %s not updated', rss_feed.link)
+
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     fetch_rss()
