@@ -29,8 +29,8 @@ class Command(BaseCommand):
 
         feed = feedparser.parse(feed_url)
 
-        obj, _ = Rss.objects.get_or_create(link=feed['feed']['link'],
-                                           name=feed['feed']['title'],
-                                           etag=feed['etag'])
+        obj, _ = Rss.objects.get_or_create(link=feed['href'],
+                                           name=feed['feed']['title']
+                                           )
         obj.users.add(user)
         obj.save()
