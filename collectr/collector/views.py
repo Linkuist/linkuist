@@ -21,8 +21,8 @@ def secret_bookmark(request, username):
     source = request.GET.get('source')
     token = request.GET.get('token')
 
-    if not url or not link_from or not source or not token:
-        return HttpResponse(status=404)
+    if None in (url, link_from, source, token):
+        return HttpResponse(status=400)
 
     try:
         user = User.objects.get(username=username, userprofile__token=token)
