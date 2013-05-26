@@ -134,13 +134,13 @@ class LinkExtractor(object):
         self.response = response
 
     def extract_text_html(self, page_content, url):
-        article = self.goose.extractContent(url=url, rawHTML=page_content)
-        self.full_content = article.cleanedArticleText
-        if article.topImage:
-            self.picture = article.topImage.imageSrc
+        article = self.goose.extract(url=url, raw_html=page_content)
+        self.full_content = article.cleaned_text
+        if article.top_image:
+            self.picture = article.top_image.src
 
         self.title = article.title
-        self.summary = self.get_summary(article.cleanedArticleText)
+        self.summary = self.get_summary(article.cleaned_text)
 
     def extract_image_generic(self, page_content, url):
         url_parse = urlparse.urlparse(url)
