@@ -7,11 +7,10 @@
 
 # python
 import logging
-import time
 
 # django
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 # rq
 import redis
@@ -49,5 +48,4 @@ class Command(BaseCommand):
             try:
                 peon.work()
             except redis.exceptions.ConnectionError:
-                logger.info('Redis did not respond, delaying reconnection')
-                time.sleep(10)
+                raise CommandError('Redis did not respond')
