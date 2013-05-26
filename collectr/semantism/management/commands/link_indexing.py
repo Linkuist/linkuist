@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
     unstack links and index them'
 
@@ -5,6 +7,7 @@
 
 # python
 import logging
+import time
 
 # django
 from django.conf import settings
@@ -26,28 +29,25 @@ except ImportError:
 from source import models as source_models
 
 
-logger = logging.getLogger(__name__)
-
 class Command(BaseCommand):
-    args = u"<queue_name>"
-    help = u"Run worker for the queue"
+    args = u'<queue_name>'
+    help = u'Run worker for the queue'
 
     def handle(self, *args, **options):
-        queue_name = 'link_indexing'
-        if args:
-            queue_name = args[0]
+
+        logger = logging.getLogger(__name__)
+        queue_name = args[0] if args else 'link_indexing'
+
         with Connection():
-            qs = Queue(queue_name)
-            w = Worker(qs)
+            queue = Queue(queue_name)
+            peon = Worker(queue)
+
             if HAS_SENTRY:
                 sclient = Client(settings.SENTRY_DSN)
-                register_sentry(sclient, w)
+                register_sentry(sclient, peon)
+
             try:
-                w.work()
+                peon.work()
             except redis.exceptions.ConnectionError:
-                logger.info("Redis didn't respond, delaying reconnection")
+                logger.info('Redis did not respond, delaying reconnection')
                 time.sleep(10)
-
-
-
-
