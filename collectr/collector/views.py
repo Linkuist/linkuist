@@ -2,6 +2,7 @@
 from datetime import datetime
 
 # django
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -9,11 +10,10 @@ from django.shortcuts import redirect
 
 # rq
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue, Connection
 
 from semantism.process import index_url
 
-links_queue = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
 
 def secret_bookmark(request, username):
     url = request.GET.get('url')
@@ -29,8 +29,10 @@ def secret_bookmark(request, username):
     except User.DoesNotExist:
         return HttpResponse(status=403)
 
-    links_queue.enqueue_call(func=index_url, args=(url, user.id, datetime.now(),
-        link_from, source), timeout=60)
+    with Connection(Redis(**settings.RQ_DATABASE)):
+        links_queue = Queue('link_indexing')
+        links_queue.enqueue_call(func=index_url,
+            args=(url, user.id, datetime.now(), link_from, source), timeout=60
+        )
 
     return HttpResponse(status=201)
-
