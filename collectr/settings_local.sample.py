@@ -14,6 +14,13 @@ DATABASES = {
     }
 }
 
+RQ_DATABASE = {
+    'host': 'localhost',
+    'port': 6349,
+    'db': 0,
+    'password': None,
+}
+
 SECRET_KEY = ''
 
 TWITTER_CONSUMER_KEY = ''
