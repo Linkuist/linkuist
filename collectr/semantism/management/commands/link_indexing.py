@@ -15,8 +15,12 @@ import redis
 from rq import Queue, Connection, Worker
 
 # raven (sentry)
-from raven import Client
-from rq.contrib.sentry import register_sentry
+try:
+    from raven import Client
+    from rq.contrib.sentry import register_sentry
+    HAS_SENTRY = True
+except ImportError:
+    HAS_SENTRY = False
 
 # import django's models to preload code
 from source import models as source_models
@@ -35,8 +39,9 @@ class Command(BaseCommand):
         with Connection():
             qs = Queue(queue_name)
             w = Worker(qs)
-            sclient = Client(settings.SENTRY_DSN)
-            register_sentry(sclient, w)
+            if HAS_SENTRY:
+                sclient = Client(settings.SENTRY_DSN)
+                register_sentry(sclient, w)
             try:
                 w.work()
             except redis.exceptions.ConnectionError:
