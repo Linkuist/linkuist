@@ -40,7 +40,7 @@ def fetch_rss():
 
         for rss_feed in rss_feeds:
             feed = feedparser.parse(rss_feed.link)
-            urlp = urlparse.urlparse(rss_feed.link)
+            urlp = urlparse.urlparse(feed['feed']['link'])
 
             if feed.get('etag') != rss_feed.etag:
                 logger.info('New entry in feed %s', rss_feed.link)
