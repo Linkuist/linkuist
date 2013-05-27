@@ -143,3 +143,5 @@ Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org/co
 
 # hook on irssi signals
 Irssi::signal_add('message public', 'look_for_urls');
+
+Irssi::print("linkuist URL poster $VERSION ready");
