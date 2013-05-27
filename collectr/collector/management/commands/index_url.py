@@ -6,14 +6,15 @@ import datetime
 from optparse import make_option
 
 # django
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 # collectr
 from semantism.process import index_url
 
 # rq
-from redis import Redis
-from rq import use_connection, Queue
+import redis
+from rq import Queue, Connection
 
 
 class Command(BaseCommand):
@@ -33,6 +34,8 @@ class Command(BaseCommand):
         if 'sync' in kwargs:
             index_url(url, user_id, datetime.datetime.now(), author_name, source)
         else:
-            self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
-            self.q.enqueue(index_url, url, user_id, datetime.datetime.now(), author_name, source)
+            with Connection(redis.Redis(**settings.RQ_DATABASE)):
+                queue = Queue('link_indexing')
+                queue.enqueue(index_url, url, user_id,
+                              datetime.datetime.now(), author_name, source)
 
