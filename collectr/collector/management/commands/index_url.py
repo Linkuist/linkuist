@@ -7,6 +7,7 @@ from optparse import make_option
 
 # django
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
 # collectr
@@ -18,7 +19,7 @@ from rq import Queue, Connection
 
 
 class Command(BaseCommand):
-    args = '<url> <user_id> <author name> <source>'
+    args = '<url> <user> <author name> <source>'
     help = 'insert an url in link_indexing queue'
     option_list = BaseCommand.option_list + (
         make_option('--sync',
@@ -29,13 +30,20 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
-        url, user_id, author_name, source = args
+        url, username, author_name, source = args
         print kwargs
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise CommandError('User {0} does not exist.'.format(username))
+
         if 'sync' in kwargs:
-            index_url(url, user_id, datetime.datetime.now(), author_name, source)
+            index_url(url, user.id, datetime.datetime.now(), author_name,
+                      source)
         else:
             with Connection(redis.Redis(**settings.RQ_DATABASE)):
                 queue = Queue('link_indexing')
-                queue.enqueue(index_url, url, user_id,
+                queue.enqueue(index_url, url, user.id,
                               datetime.datetime.now(), author_name, source)
 
