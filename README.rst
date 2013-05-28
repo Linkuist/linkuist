@@ -24,7 +24,7 @@ The project requires a lots of dependancies:
   * South in version 0.7.5
   * certifi in version 0.0.8
   * chardet in version 1.0.1
-  * django-social-auth in version 0.6.9
+  * django-social-auth in version 0.7.23
   * httplib2 in version 0.7.4
   * lxml in version 2.3.4
   * nltk in version 2.0.1

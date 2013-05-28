@@ -4,7 +4,7 @@ PyYAML==3.10
 South==0.7.5
 certifi==0.0.8
 chardet==1.0.1
-django-social-auth==0.6.9
+django-social-auth >=0.7.23
 django-extensions==0.9
 httplib2==0.7.4
 lxml==2.3.4
