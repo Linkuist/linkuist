@@ -53,6 +53,7 @@ class FiltersForm(forms.Form):
         super(FiltersForm, self).__init__(*args, **kwargs)
         self.fields['filters'].queryset = self.fields['filters'].queryset.filter(user=user)
 
+
 class RssForm(forms.Form):
     feeds = forms.ModelMultipleChoiceField(queryset=source_models.Rss.objects.all(),
         widget=TableCheckboxSelectMultiple)

@@ -4,15 +4,14 @@ from django.shortcuts import redirect, render
 
 from userprofile import forms
 
+
 @login_required
 def home(request):
-
     return render(request, 'userprofile/home.html')
 
 
 @login_required
 def rss(request):
-
     form = forms.RssForm(request.user, data=request.POST or None)
     if request.method == 'POST' and form.is_valid():
         to_add = form.cleaned_data['feeds']
