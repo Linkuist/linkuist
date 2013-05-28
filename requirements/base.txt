@@ -1,4 +1,4 @@
-Django==1.4
+Django==1.5
 Logbook==0.3
 PyYAML==3.10
 South==0.7.5
