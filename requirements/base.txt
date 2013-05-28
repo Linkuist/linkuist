@@ -1,6 +1,6 @@
 Django >=1.5, <1.6
 PyYAML >=3.10
-South >=0.7.5
+South >=0.7.5, <0.8
 certifi >=0.0.8
 chardet >=1.0.1, <2
 django-social-auth >=0.7.23
@@ -16,5 +16,5 @@ rsa >=3.1.1
 tweepy >=1.9
 numpy >=1.6.2
 pytidylib==0.2.1
-django-tastypie >=0.9.12
+django-tastypie ==0.9.12
 psycopg2 >=2.5
