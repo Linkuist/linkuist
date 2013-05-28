@@ -18,7 +18,7 @@ Installation
 
 The project requires a lots of dependancies:
 
-  * Django in version 1.4
+  * Django in version 1.5
   * Logbook in version 0.3
   * PyYAML in version 3.10
   * South in version 0.7.5
