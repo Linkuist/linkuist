@@ -12,6 +12,7 @@ class UserFactory(factory.Factory):
 
     username = factory.Sequence(lambda n: 'username%s' % n)
     email = factory.Sequence(lambda n: 'user.name%s@example.com' % n)
+    password = factory.PostGenerationMethodCall('set_password', '')
 
 
 class UrlViewsFactory(factory.Factory):
