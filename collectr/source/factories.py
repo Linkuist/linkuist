@@ -73,3 +73,10 @@ class LinkSumFactory(factory.Factory):
         link = super(LinkSumFactory, cls)._prepare(create, **kwargs)
         link.authors.add(author)
         return link
+
+
+class RssFactory(factory.Factory):
+    FACTORY_FOR = source_models.Rss
+
+    link = factory.Sequence(lambda n: u"http://this.is.a.rss-feed-%s.com/" % n)
+    name = factory.Sequence(lambda n: u"Rss feed #%s" % n)

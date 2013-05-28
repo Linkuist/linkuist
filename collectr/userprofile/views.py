@@ -22,12 +22,24 @@ def rss(request):
 
         for feed in to_del:
             feed.users.remove(request.user)
-        return redirect('userprofile:home')
+        return redirect('userprofile:rss')
 
     data = {
         'form': form,
     }
     return render(request, 'userprofile/rss.html', data)
+
+
+@login_required
+def add_rss(request):
+    form = forms.AddRssForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('userprofile:rss')
+    data = {
+        'form': form,
+    }
+    return render(request, 'userprofile/add_rss.html', data)
 
 
 @login_required

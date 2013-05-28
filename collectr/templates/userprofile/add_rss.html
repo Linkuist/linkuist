@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %} - Home{% endblock title %}
+
+{% block sidebar %}
+<ul class="nav nav-list">
+    <li class="nav-header"><a href="{% url userprofile:home %}">User profile</a></li>
+    <li class="active"><a href="{% url userprofile:rss %}">Rss feeds</a></li>
+    <li><a href="{% url userprofile:filters %}">Filters</a></li>
+</ul>
+{% endblock sidebar %}
+
+
+{% block middle-container %}
+
+<div class="row-fluid">
+    <h1>Add a new rss file</h1>
+    <form method="POST">{% csrf_token %}
+        {{ form }}
+        <input type="submit" name="Add the Rss">
+    </form>
+</div>
+
+{% endblock middle-container %}

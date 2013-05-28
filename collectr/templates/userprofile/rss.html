@@ -17,6 +17,9 @@
 <div class="hero-unit">
     <h2>Rss</h2>
 
+    <br>
+    <a href="{% url userprofile:add_rss %}"<button type="button" class="btn btn-primary">Add a new rss feed</button></a>
+    <br><br>
     <form method="POST">{% csrf_token %}
     <table>
     {{ form.as_table }}

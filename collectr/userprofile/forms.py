@@ -62,3 +62,11 @@ class RssForm(forms.Form):
         super(RssForm, self).__init__(*args, **kwargs)
         self.fields['feeds'].initial = source_models.Rss.objects.filter(users=user)
 
+
+class AddRssForm(forms.ModelForm):
+
+    class Meta:
+        model = source_models.Rss
+        fields = ['link', 'name']
+    
+
