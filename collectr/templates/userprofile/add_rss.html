@@ -6,6 +6,7 @@
 {% block sidebar %}
 <ul class="nav nav-list">
     <li class="nav-header"><a href="{% url 'userprofile:home' %}">User profile</a></li>
+    <li><a href="#">Link</a></li>
     <li class="active"><a href="{% url 'userprofile:rss' %}">Rss feeds</a></li>
     <li><a href="{% url 'userprofile:filters' %}">Filters</a></li>
 </ul>
@@ -14,11 +15,11 @@
 
 {% block middle-container %}
 
-<div class="row-fluid">
+<div class="hero-unit">
     <h1>Add a new rss file</h1>
     <form method="POST">{% csrf_token %}
         {{ form }}
-        <input type="submit" name="Add the Rss">
+        <input type="submit" name="Add the Rss" />
     </form>
 </div>
 

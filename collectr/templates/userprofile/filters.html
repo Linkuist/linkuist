@@ -13,18 +13,16 @@
 {% endblock sidebar %}
 
 
-{% block container-fluid %}
+{% block middle-container %}
 
 <div class="hero-unit">
     <h1>Filters</h1>
-    <form method="POST">
+    <form method="POST">{% csrf_token %}
     <table>
     {{ form.as_table }}
     </table>
-    <input type="submit">
+    <input type="submit" />
     </form>
 </div>
 
-{% endblock container-fluid %}
-
-
+{% endblock middle-container %}
