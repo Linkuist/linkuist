@@ -16,9 +16,19 @@
 
 {% block middle-container %}
 
-<div class="row-fluid">
-    <div class="span12">
+<div class="hero-unit">
+    <div>
         <h1>Hello {{ user.username }}</h1>
+        <p>This is your profile.
+
+Here, you can customize what Linkuist collects on your network. What goes in, what stays out.
+
+Enjoy.</p>
+
+       <h2>Bookmarklet</h2>
+           <p>
+             Bookmark links with this <a href="javascript:location.href='http{% if request.is_secure %}s{% endif %}://{{ request.get_host }}{% url 'collector:bookmark' user.username %}?from={{ user.username }};token={{ user.userprofile.token }};source=Bookmarks;url='+encodeURIComponent(location.href);">Bookmark to Linkuist</a> bookmarklet. It will allow you to save links from your browser for later read.
+           </p>
     </div>
 </div>
 
