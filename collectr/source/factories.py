@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 import models as source_models
 
 
-class UserFactory(factory.Factory):
+class UserFactory(factory.DjangoModelFactory):
     FACTORY_FOR = User
 
     username = factory.Sequence(lambda n: 'username%s' % n)
@@ -15,39 +15,39 @@ class UserFactory(factory.Factory):
     password = factory.PostGenerationMethodCall('set_password', '')
 
 
-class UrlViewsFactory(factory.Factory):
+class UrlViewsFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.UrlViews
 
     count = factory.Sequence(lambda n: int(n))
 
 
-class SourceFactory(factory.Factory):
+class SourceFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Source
 
     name = factory.Sequence(lambda n: 'Source%s' % n)
     slug = factory.Sequence(lambda n: 'source%s' % n)
 
 
-class CollectionFactory(factory.Factory):
+class CollectionFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Collection
 
     name = factory.Sequence(lambda n: 'Collection%s' % n)
 
 
-class FilterFactory(factory.Factory):
+class FilterFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Filter
 
     to_collection = factory.SubFactory(CollectionFactory)
 
 
-class AuthorFactory(factory.Factory):
+class AuthorFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Author
 
     name = factory.Sequence(lambda n: 'Author%s' % n)
     source = factory.SubFactory(SourceFactory)
 
 
-class UrlFactory(factory.Factory):
+class UrlFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Url
 
     link = factory.Sequence(lambda n: 'http://this.is.link.%s.com/' % n)
@@ -60,7 +60,7 @@ class UrlFactory(factory.Factory):
     content = factory.Sequence(lambda n: lorem_ipsum.paragraph())
 
 
-class LinkSumFactory(factory.Factory):
+class LinkSumFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.LinkSum
 
     url = factory.SubFactory(UrlFactory)
@@ -76,7 +76,7 @@ class LinkSumFactory(factory.Factory):
         return link
 
 
-class RssFactory(factory.Factory):
+class RssFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Rss
 
     link = factory.Sequence(lambda n: u"http://this.is.a.rss-feed-%s.com/" % n)
