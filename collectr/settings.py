@@ -27,6 +27,8 @@ MANAGERS = ADMINS
 #    }
 #}
 
+RQ_DATABASE = {}
+
 TIME_ZONE = 'Europe/Paris'
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
