@@ -9,34 +9,46 @@ from django.contrib import sites
 # local
 from source import models
 
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'name')
 
-class TagAdmin(admin.ModelAdmin):
-    pass
-
-class UrlAdmin(admin.ModelAdmin):
-    pass
-
-class UrlViewsAdmin(admin.ModelAdmin):
-    pass
 
 class FilterAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'regexp', 'field', 'to_delete', 'to_collection')
 
-class CollectionAdmin(admin.ModelAdmin):
-    pass
-
-class LinkSumAdmin(admin.ModelAdmin):
-    list_display = ('user', 'inserted_at', 'url')
-    list_filter = ('user',)
 
 class SourceAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'name')
+
+
+class UrlViewsAdmin(admin.ModelAdmin):
+    list_display = ('link', 'count')
+
+
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+class UrlAdmin(admin.ModelAdmin):
+    list_display = ('link', 'title', 'inserted_at')
+
+
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'source')
+
+
+class LinkSumAdmin(admin.ModelAdmin):
+    list_display = ('user', 'inserted_at', 'url', 'read', 'recommanded', 'hidden')
+    list_filter = ('user',)
+
 
 class RssAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'link', 'etag')
+
 
 class RedditAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('subreddit', 'uid')
+
 
 admin.site.register(models.Filter, FilterAdmin)
 admin.site.register(models.LinkSum, LinkSumAdmin)
