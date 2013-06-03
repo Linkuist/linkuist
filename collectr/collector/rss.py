@@ -40,6 +40,13 @@ def fetch_rss():
 
         for rss_feed in rss_feeds:
             feed = feedparser.parse(rss_feed.link, etag=rss_feed.etag)
+            if feed.bozo:
+                logger.warning('Problem while parsing feed %s (%s)',
+                    rss_feed.link, feed.bozo_exception)
+                continue
+            if not 'status' in feed:
+                logger.warning('Feed %s has no status in it. Is that an http error ?', rss_feed.link)
+                return
             if feed.status > 399:
                 logger.warning('Got bad http status while fetching %s', rss_feed.link)
                 continue
@@ -48,10 +55,6 @@ def fetch_rss():
                 logger.info('Feed %s not modified', rss_feed.link)
                 continue
 
-            if feed.bozo:
-                logger.warning('Problem while parsing feed %s (%s)', 
-                    rss_feed.link, feed.bozo_exception)
-                continue
             urlp = urlparse.urlparse(feed['feed']['link'])
 
             if feed.get('etag') != rss_feed.etag:
