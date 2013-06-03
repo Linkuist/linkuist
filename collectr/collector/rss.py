@@ -50,7 +50,7 @@ def fetch_rss():
 
             if feed.bozo:
                 logger.warning('Problem while parsing feed %s (%s)', 
-                    rss_feed.link, feed.bozo_exception.getMessage)
+                    rss_feed.link, feed.bozo_exception)
                 continue
             urlp = urlparse.urlparse(feed['feed']['link'])
 
