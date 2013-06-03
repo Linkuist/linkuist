@@ -18,11 +18,11 @@ class FilterAdmin(admin.ModelAdmin):
 
 
 class SourceAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name')
+    list_display = ('name', 'slug')
 
 
 class UrlViewsAdmin(admin.ModelAdmin):
-    list_display = ('link', 'count')
+    list_display = ('count',)
 
 
 class TagAdmin(admin.ModelAdmin):
