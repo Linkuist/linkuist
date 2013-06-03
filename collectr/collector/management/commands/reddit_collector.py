@@ -27,7 +27,8 @@ class Command(BaseCommand):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.reddit = praw.Reddit('Linkuist reddit sumarizer')
+        self.reddit = praw.Reddit('Linkuist reddit sumarizer',
+                disable_update_check=True)
         self.reddit.set_oauth_app_info(client_id=settings.REDDIT_APP_ID,
                 client_secret=settings.REDDIT_API_SECRET,
                 redirect_uri='http://linkuist.com/complete/reddit/')
