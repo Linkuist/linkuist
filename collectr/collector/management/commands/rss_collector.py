@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
             jobs = scheduler.get_jobs()
             for job in jobs:
-                if job.func_name == 'collector.rss.fetch_rss'
+                if job.func_name == 'collector.rss.fetch_rss':
                     raise CommandError('RSS collector task already scheduled')
 
             try:
