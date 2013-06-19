@@ -57,8 +57,12 @@ def get_display_paginate_item(paginator, page, max_paginated=5):
     total_page = paginator.num_pages
     page_range = []
 
+    # Not enough pages
+    if total_page <= max_paginated:
+        page_range = paginator.page_range
+
     # page starting
-    if page <= max_paginated:
+    elif page <= max_paginated:
         page_range = range(1, max_paginated)
         page_range.append('...')
         page_range.extend(range(total_page - max_paginated, max_paginated + 1))
