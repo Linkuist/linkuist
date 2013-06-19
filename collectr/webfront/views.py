@@ -1,6 +1,8 @@
 # python
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
+
 # django
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
@@ -79,17 +81,30 @@ def get_display_paginate_item(paginator, page, max_paginated=5):
 
 
 @login_required
-def links_today(request, collection=None, template="webfront/collection.html"):
+def links_today(request, period, collection=None,
+                template="webfront/collection.html"):
     show_read = True
+
     now = datetime.now()
-    yesterday = datetime.now() - timedelta(days=1)
+    today = datetime(now.year, now.month, now.day)
+    period_start, period_end = {
+        'today': (today, now),
+        'yesterday': (today + relativedelta(days=-1), today),
+        'this_week': (today + relativedelta(weeks=-1, weekday=0), now),
+        'last_week': (today + relativedelta(weeks=-2, weekday=0),
+                      today + relativedelta(weeks=-1, weekday=0)),
+        'this_month': (today + relativedelta(day=1), now),
+        'last_month': (today + relativedelta(day=1, months=-1),
+                       today + relativedelta(day=1)),
+    }[period]
+
     if collection == "unread" or not collection:
 #        show_unread = False
         collection = "all"
     qs = LinkSum.objects.select_related('authors')\
                         .filter(hidden=False)\
                         .filter(user__id=request.user.id)\
-                        .filter(inserted_at__range=(yesterday, now))\
+                        .filter(inserted_at__range=(period_start, period_end))\
                         .order_by('-recommanded')
     if not show_read:
         qs.filter(read=False)
