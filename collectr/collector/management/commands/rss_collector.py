@@ -29,6 +29,11 @@ class Command(BaseCommand):
         with Connection(redis.Redis(**settings.RQ_DATABASE)):
             scheduler = Scheduler('rss_collector')
 
+            jobs = scheduler.get_jobs()
+            for job in jobs:
+                if job.func_name == 'collector.rss.fetch_rss'
+                    raise CommandError('RSS collector task already scheduled')
+
             try:
                 scheduler.enqueue_periodic(
                     datetime.datetime.now(),
