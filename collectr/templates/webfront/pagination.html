@@ -5,12 +5,14 @@
     {% if paginator.has_previous %}
     <li class="previous"><a href="?page={{ paginator.previous_page_number }}">{% trans "Previous" %}</a></li>
     {% else %}
-    <li class="previous disabled"></li>
+    <li class="previous disabled"><a href="#">{% trans "Previous" %}</a></li>
     {% endif %}
 
     {% for page_num in page_range %}
     {% if page_num == "..." %}
-    <li class="disabled"></li>
+    <!-- <li class="disabled"></li> -->
+    {% elif page_num == paginator.number %}
+    <li class="active"><a href="#">{{ page_num }}</a></li>
     {% else %}
     <li><a href="?page={{ page_num}}">{{ page_num }}</a></li>
     {% endif %}
@@ -19,7 +21,7 @@
     {% if paginator.has_next %}
     <li class="next"><a href="?page={{ paginator.next_page_number }}">{% trans "Next" %}</a></li>
     {% else %}
-    <li class="next disabled">
+    <li class="next disabled"><a href="#">{% trans "Next" %}</a></li>
     {% endif %}
   </ul>
 </div>
