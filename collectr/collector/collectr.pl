@@ -28,6 +28,12 @@ our ($browser);
 # handler for incoming messages
 sub look_for_urls {
   my ($server, $msg, $nick, $address, $target) = @_;
+  my $whitelist = Irssi::settings_get_str('collectr_channels');
+
+  if ($whitelist != "blank" and $target !~ m/#(?:$whitelist)/) {
+    return ;
+  }
+
   my $urlre = qr#((?:https?://[^\s<>"]+|www\.[-a-z0-9.]+)[^\s.,;<">\):])#;
 
   # are there any urls to handle?
@@ -140,6 +146,7 @@ $browser->timeout(3);
 Irssi::settings_add_str('collectr', 'collectr_username', "blank");
 Irssi::settings_add_str('collectr', 'collectr_token', "blank");
 Irssi::settings_add_str('collectr', 'collectr_url', "http://links.litchis.org/collector/bookmark");
+Irssi::settings_add_str('collectr', 'collectr_channels', "blank");
 
 # hook on irssi signals
 Irssi::signal_add('message public', 'look_for_urls');
