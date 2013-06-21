@@ -5,12 +5,16 @@
 
 {% block container-fluid %}
 <ul>
+  {% if 'twitter' in social_auth.backends %}
   <li>
-    <a href="{% url socialauth_begin 'twitter' %}">Enter using Twitter</a>
+    <a href="{% url 'socialauth_begin' 'twitter' %}">Enter using Twitter</a>
   </li>
+  {% endif %}
+  {% if 'reddit' in social_auth.backends %}
   <li>
-    <a href="{% url socialauth_begin 'reddit' %}">Enter using Reddit</a>
+    <a href="{% url 'socialauth_begin' 'reddit' %}">Enter using Reddit</a>
   </li>
+  {% endif %}
 </ul>
 
 <form action="" method="post" class="form-horizontal">{% csrf_token %}
