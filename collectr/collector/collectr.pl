@@ -30,7 +30,7 @@ sub look_for_urls {
   my ($server, $msg, $nick, $address, $target) = @_;
   my $whitelist = Irssi::settings_get_str('collectr_channels');
 
-  if ($whitelist != "blank" and $target !~ m/#(?:$whitelist)/) {
+  if ($whitelist ne "blank" and $target !~ qr/^#($whitelist)$/) {
     return ;
   }
 
