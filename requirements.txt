@@ -10,8 +10,6 @@ django-social-auth==0.7.8
 feedparser==5.1.2
 -e git://github.com/grangier/python-goose.git#egg=goose-dev
 gunicorn==0.14.6
-ipdb==0.7
-ipython==0.12
 lxml==3.0.1
 oauth2==1.5.211
 opml==0.5
