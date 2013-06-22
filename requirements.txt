@@ -9,7 +9,7 @@ django-extensions==0.7.1
 django-social-auth==0.7.8
 -e git://github.com/toastdriven/django-tastypie.git@342076cf6bfacd1b8734e02e6ffe225e590114c4#egg=django_tastypie-dev
 feedparser==5.1.2
--e git://github.com/xgdlm/python-goose.git#egg=goose-dev
+-e git://github.com/grangier/python-goose.git#egg=goose-dev
 gunicorn==0.14.6
 ipdb==0.7
 ipython==0.12
