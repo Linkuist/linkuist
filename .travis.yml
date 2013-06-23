@@ -17,6 +17,8 @@ install:
     - "pip install -r requirements/tests.txt --use-mirrors"
 script:
     - "cd collectr" 
+    - "python manage.py syncdb --settings=settings_travis"
+    - "python manage.py migrate --settings=settings_travis"
     - "python manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront tastypie"
     - "cd .."
 services:
