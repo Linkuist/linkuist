@@ -32,9 +32,28 @@ class WebfrontTestCase(test.TransactionTestCase):
         response = self.client.get(reverse('webfront:collection'))
         self.assertEqual(response.status_code, 200)
 
-    def test_links_today(self):
-        response = self.client.get(reverse('webfront:links_today'))
+    def test_links_today_today(self):
+        response = self.client.get(reverse('webfront:links_today', args=('today',)))
         self.assertEqual(response.status_code, 200)
+
+    def test_links_today_yesterday(self):
+        response = self.client.get(reverse('webfront:links_today', args=('yesterday',)))
+        self.assertEqual(response.status_code, 200)
+
+    def test_links_today_week(self):
+        response = self.client.get(reverse('webfront:links_today', args=('this_week',)))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('webfront:links_today', args=('last_week',)))
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_links_today_month(self):
+        response = self.client.get(reverse('webfront:links_today', args=('this_month',)))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('webfront:links_today', args=('last_month',)))
+        self.assertEqual(response.status_code, 200)
+
 
 
 class WebfrontPaginationTestCase(test.TestCase):
