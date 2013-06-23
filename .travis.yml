@@ -15,9 +15,9 @@ notifications:
 install: 
     - "pip install -r requirements/base.txt --use-mirrors"
     - "pip install -r requirements/tests.txt --use-mirrors"
-script: 
-    - "cd collectr python manage.py test source --settings=settings_travis"
-    - "cd collectr python manage.py test webfront --settings=settings_travis"
-    - "cd collectr python manage.py test semantism --settings=settings_travis"
-    - "cd collectr python manage.py test collector --settings=settings_travis"
-
+script:
+    - "cd collectr" 
+    - "python manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront tastypie"
+    - "cd .."
+services:
+    - redis-server
