@@ -5,7 +5,7 @@ South==0.7.3
 Werkzeug==0.8.3
 cssselect==0.7.1
 django-extensions==0.7.1
-django-social-auth==0.7.8
+django-social-auth==0.7.23
 -e git://github.com/toastdriven/django-tastypie.git@342076cf6bfacd1b8734e02e6ffe225e590114c4#egg=django_tastypie-dev
 feedparser==5.1.2
 -e git://github.com/grangier/python-goose.git#egg=goose-dev
