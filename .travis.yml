@@ -1,0 +1,21 @@
+--- #YAML:1.1
+language: python
+python:
+    - "2.6"
+    - "2.7"
+env:
+    - DB=postgres
+before_script:
+    - psql -c 'create database collectr;' -U postgres
+notifications:
+    irc:
+        channels: "irc.freenode.org#linkuist"
+        on_success: change
+        on_failure: change
+install: 
+    - "pip install -r requirements/base.txt --use-mirrors"
+    - "pip install -r requirements/tests.txt --use-mirrors"
+script: 
+    - "cd collectr && python manage.py test --settings=settings_travis"
+
+
