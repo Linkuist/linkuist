@@ -6,6 +6,7 @@
 
 # python
 import datetime
+from optparse import make_option
 
 # 3rd party
 import redis
@@ -21,17 +22,29 @@ from collector.rss import fetch_rss
 
 
 class Command(BaseCommand):
-    args = ''
+    option_list = BaseCommand.option_list + (
+        make_option('--replace',
+            action='store_true',
+            dest='replace',
+            default=False,
+            help='Replace an existing RSS collecting job.'),
+        )
     help = 'Starts a scheduled rss collection'
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **options):
 
         with Connection(redis.Redis(**settings.RQ_DATABASE)):
             scheduler = Scheduler('rss_collector')
 
             jobs = scheduler.get_jobs()
             for job in jobs:
-                if job.func_name == 'collector.rss.fetch_rss':
+                if job.func_name != 'collector.rss.fetch_rss':
+                    continue
+
+                if options.get('replace'):
+                    job.cancel()
+                    break
+                else:
                     raise CommandError('RSS collector task already scheduled')
 
             try:
