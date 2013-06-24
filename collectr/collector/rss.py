@@ -51,6 +51,11 @@ def fetch_rss():
                 logger.warning('Got bad http status while fetching %s', rss_feed.link)
                 continue
 
+            if feed.status == 301:
+                rss_feed.link = feed.href
+                rss_feed.save()
+                logger.info('Feed link has now changed to %s and will be updated on the next run', rss_feed.link)
+
             if feed.status == 304:
                 logger.info('Feed %s not modified', rss_feed.link)
                 continue
