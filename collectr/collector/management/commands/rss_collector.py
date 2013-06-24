@@ -48,11 +48,11 @@ class Command(BaseCommand):
                     raise CommandError('RSS collector task already scheduled')
 
             try:
-                scheduler.enqueue_periodic(
+                scheduler.schedule(
                     datetime.datetime.now(),
-                    1200,
-                    20000,
                     fetch_rss,
+                    interval=1200,
+                    repeat=20000,
                 )
             except redis.exceptions.ConnectionError:
                 raise CommandError('Redis did not respond')
