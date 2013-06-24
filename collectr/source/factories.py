@@ -31,7 +31,7 @@ class SourceFactory(factory.DjangoModelFactory):
 class CollectionFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Collection
 
-    name = factory.Sequence(lambda n: 'Collection%s' % n)
+    name = factory.Sequence(lambda n: 'collection%s' % n)
 
 
 class FilterFactory(factory.DjangoModelFactory):
@@ -43,7 +43,7 @@ class FilterFactory(factory.DjangoModelFactory):
 class AuthorFactory(factory.DjangoModelFactory):
     FACTORY_FOR = source_models.Author
 
-    name = factory.Sequence(lambda n: 'Author%s' % n)
+    name = factory.Sequence(lambda n: 'author%s' % n)
     source = factory.SubFactory(SourceFactory)
 
 

@@ -1,11 +1,11 @@
 # python
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # django
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 
@@ -105,6 +105,8 @@ def links_today(request, period, collection=None,
 #        show_unread = False
         collection = "all"
     qs = LinkSum.objects.select_related('authors')\
+                        .annotate(authors_count=Count('authors'))\
+                        .filter(authors_count__gt=1)\
                         .filter(hidden=False)\
                         .filter(user__id=request.user.id)\
                         .filter(inserted_at__range=(period_start, period_end))\
