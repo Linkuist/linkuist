@@ -97,7 +97,8 @@ class IndexUrlTestCase(TransactionTestCase):
     def test_move_to_collection(self):
         url = 'http://www.freenews.fr/spip.php?article12674'
         mfilter = source_factories.FilterFactory(regexp='.*freenews\.fr.*', field='link')
-        lsum = index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
+        lsum_id = index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
+        lsum = source_models.LinkSum.objects.get(pk=lsum_id).select_related('collection')
         self.assertEqual(mfilter.to_collection, lsum.collection)
 
 
