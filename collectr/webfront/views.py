@@ -1,5 +1,5 @@
 # python
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # django
