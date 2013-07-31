@@ -3,6 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # django
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.db.models import Q
@@ -28,7 +29,11 @@ def login_view(request, template="webfront/login.html"):
 
 def search(request, template="webfront/collection.html"):
     data = {}
-    querystring = request.GET['query'].replace(' ', ' & ')
+    querystring = request.GET.get('query')
+    if not querystring:
+        messages.error(request, u"Please enter a valid search term")
+        return redirect('webfront:home')
+    querystring = querystring.replace(' ', ' & ')
 
     links = LinkSum.objects.raw(
         """SELECT DISTINCT "source_linksum"."id", "source_linksum"."url_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id"
