@@ -41,6 +41,7 @@ class LinkTestCase(unittest.TestCase):
         ret = l.rebuild_query({'toto': None, 'tutu': ['coin', 'pouet']})
         self.assertEqual(ret, "tutu=coin&tutu=pouet&toto")
 
+
 class LinkExtractorTestCase(TransactionTestCase):
 
     def test_extract_html(self):
@@ -97,8 +98,8 @@ class IndexUrlTestCase(TransactionTestCase):
     def test_move_to_collection(self):
         url = 'http://www.freenews.fr/spip.php?article12674'
         mfilter = source_factories.FilterFactory(regexp='.*freenews\.fr.*', field='link')
-        lsum_id = index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
-        lsum = source_models.LinkSum.objects.get(pk=lsum_id).select_related('collection')
+        index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
+        lsum = source_models.LinkSum.objects.get(url__link=url).select_related('collection')
         self.assertEqual(mfilter.to_collection, lsum.collection)
 
 
