@@ -10,8 +10,9 @@ before_script:
 notifications:
     irc:
         channels: "irc.freenode.org#linkuist"
-        on_success: change
-        on_failure: change
+        on_success: always
+        on_failure: always
+
 install: 
     - "pip install -r requirements/base.txt --use-mirrors"
     - "pip install -r requirements/tests.txt --use-mirrors"
