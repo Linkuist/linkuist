@@ -26,7 +26,7 @@ class LinkTestCase(unittest.TestCase):
     def test_useless_querystring(self):
         url = """http://www.freenews.fr/spip.php?article12674&utm_source=feedburner&utm_medium=feed&utm_campaign=Feed:+Freenews-Freebox+(Freenews+:+L'actualit%C3%A9+des+Freenautes+-+Toute+l'actualit%C3%A9+pour+votre+Freebox)"""
         l = Link(url)
-        self.assertEqual(l.clean(), 'http://www.freenews.fr/spip.php?article12674=')
+        self.assertEqual(l.clean(), 'http://www.freenews.fr/spip.php?article12674')
 
     def test_useless_anchor(self):
         url = """http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html#xtor=RSS-3208"""
