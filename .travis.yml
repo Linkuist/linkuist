@@ -20,7 +20,6 @@ script:
     - "cd collectr" 
     - "python manage.py syncdb --settings=settings_travis --noinput"
     - "python manage.py migrate --settings=settings_travis"
-    - "python manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront tastypie"
-    - "cd .."
+    - "python manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront"
 services:
     - redis-server
