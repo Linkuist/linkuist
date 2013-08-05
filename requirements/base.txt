@@ -19,5 +19,5 @@ numpy >=1.6.2
 pytidylib==0.2.1
 django-tastypie ==0.9.12
 psycopg2 >=2.5
--e git+https://github.com/grangier/python-goose.git@383eb8e5588f1b913b32b83a6a903af8380494e9#egg=goose-dev
+goose-extractor==1.0.1
 feedparser==5.1.3
