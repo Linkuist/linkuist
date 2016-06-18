@@ -22,11 +22,6 @@ def home(request, template="webfront/home.html"):
     return render(request, template, data)
 
 
-def login_view(request, template="webfront/login.html"):
-    data = {}
-    return render(request, template, data)
-
-
 def search(request, template="webfront/collection.html"):
     data = {}
     querystring = request.GET.get('query')
