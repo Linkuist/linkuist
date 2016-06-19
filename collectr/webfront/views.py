@@ -200,7 +200,7 @@ class CollectionUserView(BaseLinkSumView):
         queryset = super(CollectionUserView, self).get_queryset()
         return queryset.filter(
             authors__name=self.kwargs.get('user'),
-            authors__source=self.kwargs.get('source'),
+            authors__source__slug=self.kwargs.get('source'),
         )
 
 
