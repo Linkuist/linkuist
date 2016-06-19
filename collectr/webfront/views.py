@@ -5,7 +5,6 @@ from dateutil.relativedelta import relativedelta
 # django
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -135,179 +134,74 @@ class BaseLinkSumView(ListView):
         return super(BaseLinkSumView, self).dispatch(*args, **kwargs)
 
 
-@login_required
-def links_today(request, period, collection=None,
-                template="webfront/collection.html"):
-    show_read = True
+class CollectionMixin(object):
+    """Add per-collection filtering."""
 
-    now = datetime.now()
-    today = datetime(now.year, now.month, now.day)
-    period_start, period_end = {
-        'today': (today, now),
-        'yesterday': (today + relativedelta(days=-1), today),
-        'this_week': (today + relativedelta(weeks=-1, weekday=0), now),
-        'last_week': (today + relativedelta(weeks=-2, weekday=0),
-                      today + relativedelta(weeks=-1, weekday=0)),
-        'this_month': (today + relativedelta(day=1), now),
-        'last_month': (today + relativedelta(day=1, months=-1),
-                       today + relativedelta(day=1)),
-    }[period]
+    def get_queryset(self):
+        queryset = super(CollectionMixin, self).get_queryset()
 
-    if collection == "unread" or not collection:
-#        show_unread = False
-        collection = "all"
-    qs = LinkSum.objects.select_related('authors')\
-                        .filter(hidden=False)\
-                        .filter(user__id=request.user.id)\
-                        .filter(inserted_at__range=(period_start, period_end))\
-                        .order_by('-recommanded')
-    if not show_read:
-        qs.filter(read=False)
+        collection = self.kwargs.get('collection', 'unread')
+        if collection == 'unread':
+            collection = 'all'
 
-    if collection:
-        collection = Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True))\
-                                       .get(name__iexact=collection)
-        qs = qs.filter(collection__id=collection.id)
-
-    paginator = Paginator(qs, 42)
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-
-    try:
-        links = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        links = paginator.page(paginator.num_pages)
-
-    page_range = get_display_paginate_item(paginator, page)
-    paginator = links
-    links = links.object_list
-    data = {
-        'unread_count': links.count(),
-        'paginator': paginator,
-        'links': links,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-        'sources': Source.objects.all(),
-        'page_range': page_range,
-    }
-
-    return render(request, template, data)
+        return queryset.filter(
+            collection=self.user_collections.get(name__iexact=collection)
+        )
 
 
-@login_required
-def collection(request, collection=None, template="webfront/collection.html"):
-    show_read = True
-    if collection == "unread" or not collection:
-#        show_unread = False
-        collection = "all"
-    collection = Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True))\
-                                   .get(name__iexact=collection)
-    qs = LinkSum.objects.select_related('authors')\
-                        .filter(user__id=request.user.id)\
-                        .filter(hidden=False)\
-                        .filter(collection__id=collection.id)\
-                        .order_by('-pk')
-    if not show_read:
-        qs.filter(read=False)
+class DateView(CollectionMixin, BaseLinkSumView):
 
-    paginator = Paginator(qs, 42)
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
+    ordering = ['-recommanded']
 
-    try:
-        links = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        links = paginator.page(paginator.num_pages)
+    def get_queryset(self):
+        queryset = super(DateView, self).get_queryset()
 
-    page_range = get_display_paginate_item(paginator, page)
-    paginator = links
-    links = links.object_list
-    data = {
-        'unread_count': links.count(),
-        'paginator': paginator,
-        'links': links,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-        'sources': Source.objects.all(),
-        'page_range': page_range,
-    }
+        now = datetime.now()
+        today = datetime(now.year, now.month, now.day)
+        period_start, period_end = {
+            'today': (today, now),
+            'yesterday': (today + relativedelta(days=-1), today),
+            'this_week': (today + relativedelta(weeks=-1, weekday=0), now),
+            'last_week': (today + relativedelta(weeks=-2, weekday=0),
+                          today + relativedelta(weeks=-1, weekday=0)),
+            'this_month': (today + relativedelta(day=1), now),
+            'last_month': (today + relativedelta(day=1, months=-1),
+                           today + relativedelta(day=1)),
+        }[self.kwargs.get('period', 'today')]
 
-    return render(request, template, data)
+        return queryset.filter(inserted_at__range=(period_start, period_end))
 
 
-@login_required
-def collection_source(request, source, template="webfront/collection.html"):
-    links = LinkSum.objects.select_related('authors')\
-                           .filter(user__id=request.user.id)\
-                           .filter(sources__slug=source)\
-                           .filter(hidden=False)\
-                           .order_by('-pk')[:100]
-    data = {
-        'unread_count': links.count(),
-        'links': links,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-        'sources': Source.objects.all(),
-    }
+class SourceView(BaseLinkSumView):
 
-    return render(request, template, data)
+    def get_queryset(self):
+        queryset = super(SourceView, self).get_queryset()
+        return queryset.filter(
+            sources__slug=self.kwargs.get('source'),
+        )
 
 
-@login_required
-def collection_tag(request, tag, template="webfront/collection.html"):
-    links = LinkSum.objects.select_related('authors')\
-                           .filter(user__id=request.user.id)\
-                           .filter(hidden=False)\
-                           .filter(url__tags__name=tag)\
-                           .order_by('-pk')[:100]
-    data = {
-        'unread_count': links.count(),
-        'links': links,
-        'sources': Source.objects.all(),
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-    }
-
-    return render(request, template, data)
+class CollectionView(CollectionMixin, BaseLinkSumView):
+    pass
 
 
-@login_required
-def collection_user(request, user, source, template="webfront/collection.html"):
-    show_read = True
-    qs = LinkSum.objects.select_related('authors')\
-                        .distinct()\
-                        .filter(user__id=request.user.id)\
-                        .filter(authors__name=user)\
-                        .filter(authors__source=source)\
-                        .filter(hidden=False)\
-                        .order_by('-pk')
-    if not show_read:
-        qs.filter(read=False)
+class CollectionTagView(BaseLinkSumView):
 
-    paginator = Paginator(qs, 42)
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
+    def get_queryset(self):
+        queryset = super(CollectionTagView, self).get_queryset()
+        return queryset.filter(
+            url__tags__name=self.kwargs.get('tag'),
+        )
 
-    try:
-        links = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        links = paginator.page(paginator.num_pages)
 
-    page_range = get_display_paginate_item(paginator, page)
-    paginator = links
-    links = links.object_list
-    data = {
-        'unread_count': links.count(),
-        'paginator': paginator,
-        'links': links,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-        'sources': Source.objects.all(),
-        'page_range': page_range,
-    }
+class CollectionUserView(BaseLinkSumView):
 
-    return render(request, template, data)
+    def get_queryset(self):
+        queryset = super(CollectionUserView, self).get_queryset()
+        return queryset.filter(
+            authors__name=self.kwargs.get('user'),
+            authors__source=self.kwargs.get('source'),
+        )
 
 
 @login_required
