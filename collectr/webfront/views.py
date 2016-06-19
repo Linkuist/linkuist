@@ -62,32 +62,28 @@ def get_display_paginate_item(paginator, page, adjacent_pages=5):
     if total_page <= adjacent_pages:
         page_range = paginator.page_range
 
-    # page starting
-    elif page <= adjacent_pages:
-        page_range = range(1, adjacent_pages)
-        page_range.append('...')
-        page_range.extend(range(
-            total_page - adjacent_pages,
-            adjacent_pages + 1
-        ))
+    # first pages
+    elif page <= 2 * (adjacent_pages / 2):
+        page_range = range(1, adjacent_pages + 1)
+        page_range.extend(['...', total_page])
 
     # between
-    elif page < total_page:
+    elif page <= total_page - 2 * (adjacent_pages / 2) :
         page_range = [1, '...']
         page_range.extend(range(
-            page - (adjacent_pages / 2),
-            page + adjacent_pages / 2
+            page - adjacent_pages / 2,
+            page + adjacent_pages / 2 + 1
         ))
-        page_range.append('...')
-        page_range.append(total_page)
+        page_range.extend(['...', total_page])
 
-    # final
-    elif page >= total_page - adjacent_pages:
+    # last pages
+    elif page > total_page - 2 * (adjacent_pages / 2):
         page_range = [1, '...']
         page_range.extend(range(
-            total_page - adjacent_pages,
+            total_page - adjacent_pages + 1,
             total_page + 1
         ))
+
     else:
         page_range = []
 
