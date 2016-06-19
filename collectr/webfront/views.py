@@ -123,6 +123,7 @@ class SearchView(TemplateView):
             AND
                 to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
             AND "source_linksum"."user_id" = %s
+            AND "source_linksum"."hidden" IS False
             ORDER BY "source_linksum"."inserted_at" DESC;
         """, [self.querystring, self.request.user.id])
 
