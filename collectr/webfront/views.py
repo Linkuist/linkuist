@@ -9,6 +9,8 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView
 
 # collector
 from source.models import LinkSum, Collection, Source
@@ -88,6 +90,49 @@ def get_display_paginate_item(paginator, page, adjacent_pages=5):
         page_range = []
 
     return page_range
+
+
+class BaseLinkSumView(ListView):
+    """Basic view listing `LinkSum` objects."""
+
+    template_name = 'webfront/collection.html'
+    context_object_name = 'links'
+    model = LinkSum
+    ordering = ['-pk']
+    paginate_by = 42
+
+    def get_queryset(self):
+        queryset = super(BaseLinkSumView, self).get_queryset()
+
+        self.user_collections = Collection.objects.filter(
+            Q(user__id=self.request.user.id) | Q(user__isnull=True)
+        )
+
+        return queryset \
+            .filter(user=self.request.user) \
+            .filter(hidden=False) \
+            .select_related('authors')
+
+    def get_context_data(self, **kwargs):
+        # TODO: handle filter on read/unread/all
+        context = {
+            'collections': self.user_collections,
+            'sources': Source.objects.all(),
+        }
+        context.update(kwargs)
+
+        # Ask parent about pagination context
+        context = super(BaseLinkSumView, self).get_context_data(**context)
+
+        # Insert our custom compact pagination
+        context.update({'page_range': get_display_paginate_item(
+            context['paginator'], context['page_obj']
+        )})
+        return context
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(BaseLinkSumView, self).dispatch(*args, **kwargs)
 
 
 @login_required
