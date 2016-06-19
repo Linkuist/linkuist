@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 
 # collector
 from source.models import LinkSum, Collection, Source
@@ -20,34 +20,6 @@ def home(request, template="webfront/home.html"):
     }
     if request.user.is_authenticated():
         return redirect("webfront:collection")
-    return render(request, template, data)
-
-
-def search(request, template="webfront/collection.html"):
-    data = {}
-    querystring = request.GET.get('query')
-    if not querystring:
-        messages.error(request, u"Please enter a valid search term")
-        return redirect('webfront:home')
-    querystring = querystring.replace(' ', ' & ')
-
-    links = LinkSum.objects.raw(
-        """SELECT DISTINCT "source_linksum"."id", "source_linksum"."url_id", "source_linksum"."read", "source_linksum"."recommanded", "source_linksum"."collection_id", "source_linksum"."inserted_at", "source_linksum"."user_id"
-           FROM source_linksum
-           INNER JOIN source_url ON
-              (source_linksum.url_id = source_url.id)
-           AND
-              to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
-           AND "source_linksum"."user_id" = %s
-           ORDER BY "source_linksum"."inserted_at" DESC;
-         """, [querystring, request.user.id])
-
-    data = {
-        'links': links,
-        'query': querystring,
-        'collections': Collection.objects.filter(Q(user__id=request.user.id) | Q(user__isnull=True)),
-        'sources': Source.objects.all(),
-    }
     return render(request, template, data)
 
 
@@ -132,6 +104,49 @@ class BaseLinkSumView(ListView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super(BaseLinkSumView, self).dispatch(*args, **kwargs)
+
+
+class SearchView(TemplateView):
+    # XXX: cannot paginate RawQuerySet
+    template_name = 'webfront/collection.html'
+
+    def get_queryset(self):
+        return LinkSum.objects.raw("""
+            SELECT
+                DISTINCT "source_linksum"."id", "source_linksum"."url_id",
+                "source_linksum"."read", "source_linksum"."recommanded",
+                "source_linksum"."collection_id",
+                "source_linksum"."inserted_at", "source_linksum"."user_id"
+            FROM source_linksum
+            INNER JOIN source_url ON
+                (source_linksum.url_id = source_url.id)
+            AND
+                to_tsvector('english', source_url.content) @@ to_tsquery('english', %s)
+            AND "source_linksum"."user_id" = %s
+            ORDER BY "source_linksum"."inserted_at" DESC;
+        """, [self.querystring, self.request.user.id])
+
+    def get_context_data(self, **kwargs):
+        context = {
+            'links': self.object_list,
+            'query': self.querystring,
+            'collections': Collection.objects.filter(
+                Q(user__id=self.request.user.id) | Q(user__isnull=True)
+            ),
+            'sources': Source.objects.all(),
+        }
+        context.update(kwargs)
+        return super(SearchView, self).get_context_data(**context)
+
+    def get(self, request, *args, **kwargs):
+        querystring = request.GET.get('query')
+        if not querystring:
+            messages.error(request, u"Please enter a valid search term")
+            return redirect('webfront:home')
+
+        self.querystring = querystring.replace(' ', ' & ')
+        self.object_list = self.get_queryset()
+        return super(SearchView, self).get(request, *args, **kwargs)
 
 
 class CollectionMixin(object):

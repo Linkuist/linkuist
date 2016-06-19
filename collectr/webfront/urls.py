@@ -7,7 +7,7 @@ from webfront import views
 
 urlpatterns = patterns('',
     url(r'^$', views.home, name="home"),
-    url(r'^search/$', views.search, name="search"),
+    url(r'^search/$', views.SearchView.as_view(), name="search"),
     url(r'^login/$', login, {'template_name': 'webfront/login.html'}, name="login"),
     url(r'^logout/$', login, name="logout"),
     url(r'^links/(?P<period>today|yesterday|(this|last)_(week|month))/$', views.DateView.as_view(), name="links_today"),
