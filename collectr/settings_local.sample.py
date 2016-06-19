@@ -16,7 +16,7 @@ DATABASES = {
 
 RQ_DATABASE = {
     'host': 'localhost',
-    'port': 6349,
+    'port': 6379,
     'db': 0,
     'password': None,
 }
