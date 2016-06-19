@@ -139,6 +139,7 @@ class SearchView(TemplateView):
         context.update(kwargs)
         return super(SearchView, self).get_context_data(**context)
 
+    @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
         querystring = request.GET.get('query')
         if not querystring:
