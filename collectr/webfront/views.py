@@ -50,35 +50,46 @@ def search(request, template="webfront/collection.html"):
     return render(request, template, data)
 
 
-def get_display_paginate_item(paginator, page, max_paginated=5):
-    """Prints nicely the range of paginating"""
-    
+def get_display_paginate_item(paginator, page, adjacent_pages=5):
+    """Alternate list of pages for paginated view.
+
+    Prepares a compact list of pages including first and last page as well as
+    a `adjacent_pages` number of pages around current `page`.
+    """
     total_page = paginator.num_pages
-    page_range = []
 
     # Not enough pages
-    if total_page <= max_paginated:
+    if total_page <= adjacent_pages:
         page_range = paginator.page_range
 
     # page starting
-    elif page <= max_paginated:
-        page_range = range(1, max_paginated)
+    elif page <= adjacent_pages:
+        page_range = range(1, adjacent_pages)
         page_range.append('...')
-        page_range.extend(range(total_page - max_paginated, max_paginated + 1))
+        page_range.extend(range(
+            total_page - adjacent_pages,
+            adjacent_pages + 1
+        ))
 
     # between
     elif page < total_page:
-        page_range.append(1)
-        page_range.append('...')
-        page_range.extend(range(page - (max_paginated / 2), page + max_paginated / 2))
+        page_range = [1, '...']
+        page_range.extend(range(
+            page - (adjacent_pages / 2),
+            page + adjacent_pages / 2
+        ))
         page_range.append('...')
         page_range.append(total_page)
 
     # final
-    elif page >= total_page - max_paginated:
-        page_range.append(1)
-        page_range.append('...')
-        page_range.extend(range(total_page - max_paginated, total_page + 1))
+    elif page >= total_page - adjacent_pages:
+        page_range = [1, '...']
+        page_range.extend(range(
+            total_page - adjacent_pages,
+            total_page + 1
+        ))
+    else:
+        page_range = []
 
     return page_range
 
