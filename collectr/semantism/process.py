@@ -31,7 +31,6 @@ from semantism import oembed
 logger = logging.getLogger('index_url')
 logger.setLevel(logging.DEBUG)
 
-sources = dict((source.name.lower(), source) for source in Source.objects.all())
 default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
 
 
@@ -121,8 +120,8 @@ def index_url(link, user_id, link_at, author_name, source_name):
     filters = Filter.objects.filter(Q(user__pk__in=user_id) | Q(user__isnull=True))
 
     try:
-        source = sources[source_name.lower()]
-    except KeyError:
+        source = Source.objects.get(name__iexact=source_name)
+    except Source.DoesNotExist:
         logger.info(u"source %s unknown" % source_name)
         return -1
 
