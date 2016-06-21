@@ -8,6 +8,7 @@ from django.utils import unittest, timezone
 from django.test import TransactionTestCase
 
 # project
+import requests_mock
 from source import factories as source_factories
 from source import models as source_models
 
@@ -44,17 +45,24 @@ class LinkTestCase(unittest.TestCase):
 class LinkExtractorTestCase(TransactionTestCase):
 
     def test_extract_html(self):
-        l = LinkExtractor('http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html')
-        l.fetch_url_content()
-        self.assertIsNotNone(l.response)
+        url = 'http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html'
 
-        l.extract()
-        self.assertIsNotNone(l.raw_content)
-        self.assertIsNotNone(l.full_content)
-        self.assertIsNotNone(l.summary)
-        self.assertIsNotNone(l.content_type)
-        self.assertIsNotNone(l.status_code)
-        self.assertIsNotNone(l.title)
+        with requests_mock.Mocker() as mock:
+            mock.get(url,
+                     text='',
+                     headers={'Content-Type': 'text/html'})
+
+            l = LinkExtractor(url)
+            l.fetch_url_content()
+            self.assertIsNotNone(l.response)
+
+            l.extract()
+            self.assertIsNotNone(l.raw_content)
+            self.assertIsNotNone(l.full_content)
+            self.assertIsNotNone(l.summary)
+            self.assertIsNotNone(l.content_type)
+            self.assertIsNotNone(l.status_code)
+            self.assertIsNotNone(l.title)
 
     def test_get_summary(self):
         l = LinkExtractor('url')
@@ -64,11 +72,18 @@ class LinkExtractorTestCase(TransactionTestCase):
 
     def test_url_cleaned(self):
         url = """http://www.freenews.fr/spip.php?article12674&utm_source=feedburner&utm_medium=feed&utm_campaign=Feed:+Freenews-Freebox+(Freenews+:+L'actualit%C3%A9+des+Freenautes+-+Toute+l'actualit%C3%A9+pour+votre+Freebox)"""
-        l = LinkExtractor(url)
-        self.assertEqual(l.url, 'http://www.freenews.fr/spip.php?article12674')
-        l.fetch_url_content()
-        l.extract()
-        self.assertEqual(l.url, 'http://www.freenews.fr/spip.php?article12674')
+        cleaned_url = 'http://www.freenews.fr/spip.php?article12674'
+
+        with requests_mock.Mocker() as mock:
+            mock.get(cleaned_url,
+                     text='',
+                     headers={'Content-Type': 'text/html'})
+
+            l = LinkExtractor(url)
+            self.assertEqual(l.url, cleaned_url)
+            l.fetch_url_content()
+            l.extract()
+            self.assertEqual(l.url, cleaned_url)
 
 
 class IndexUrlTestCase(TransactionTestCase):
@@ -78,6 +93,14 @@ class IndexUrlTestCase(TransactionTestCase):
         self.source = source_factories.SourceFactory()
         self.author = source_factories.AuthorFactory()
         self.user = source_factories.UserFactory()
+        self.mock = requests_mock.Mocker()
+        self.mock.start()
+        self.mock.get(self.url, text='', headers={'Content-Type': 'text/html'})
+        super(IndexUrlTestCase, self).setUp()
+
+    def tearDown(self):
+        self.mock.stop()
+        super(IndexUrlTestCase, self).tearDown()
 
     def test_link_index(self):
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
@@ -96,6 +119,7 @@ class IndexUrlTestCase(TransactionTestCase):
 
     def test_move_to_collection(self):
         url = 'http://www.freenews.fr/spip.php?article12674'
+        self.mock.get(url, text='', headers={'Content-Type': 'text/html'})
         mfilter = source_factories.FilterFactory(regexp='.*freenews\.fr.*', field='link')
         index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
         lsum = source_models.LinkSum.objects.select_related('collection').get(url__link=url)
