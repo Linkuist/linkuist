@@ -8,7 +8,6 @@ from django.utils import unittest, timezone
 from django.test import TransactionTestCase
 
 # project
-import oembed
 from source import factories as source_factories
 from source import models as source_models
 
@@ -101,29 +100,3 @@ class IndexUrlTestCase(TransactionTestCase):
         index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
         lsum = source_models.LinkSum.objects.select_related('collection').get(url__link=url)
         self.assertEqual(mfilter.to_collection, lsum.collection)
-
-
-class OembedTestCase(unittest.TestCase):
-    
-    def generic_resolve(self, url):
-        return oembed.resolve(url)
-
-    def test_flickr_oembed(self):
-        res = self.generic_resolve('http://www.flickr.com/photos/vineolia/7052933661/sizes/c/in/set-72157629134495052/')
-        self.assertIsNotNone(res)
-
-    def test_youtube_oembed(self):
-        res = self.generic_resolve('https://www.youtube.com/watch?v=w9n7KNnFNU8')
-        self.assertIsNotNone(res)
-
-    def test_dailymotion_oembed(self):
-        res = self.generic_resolve('http://www.dailymotion.com/video/xve2xv_zapping-tele-du-26-11-2012_tv')
-        self.assertIsNotNone(res)
-
-    def test_vimeo_oembed(self):
-        res = self.generic_resolve('http://vimeo.com/53578987')
-        self.assertIsNotNone(res)
-
-    def test_soundcloud_oembed(self):
-        res = self.generic_resolve('http://soundcloud.com/pissedoffgil/speakers-so-lowd')
-        self.assertIsNotNone(res)
