@@ -1,7 +1,9 @@
 # django
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
+from django.views.generic.edit import CreateView
 
 from userprofile import forms
 
@@ -39,16 +41,13 @@ def rss(request):
     return render(request, 'userprofile/rss.html', data)
 
 
-@login_required
-def add_rss(request):
-    form = forms.AddRssForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        return redirect('userprofile:rss')
-    data = {
-        'form': form,
-    }
-    return render(request, 'userprofile/add_rss.html', data)
+class AddRSSView(LoginRequiredMixin, CreateView):
+
+    form_class = forms.AddRssForm
+    template_name = 'userprofile/add_rss.html'
+
+    def get_success_url(self):
+        return reverse('userprofile:rss')
 
 
 @login_required
