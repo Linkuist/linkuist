@@ -1,3 +1,2 @@
 ipdb==0.7
 ipython==0.12
-requests-mock>=1.0.0
