@@ -1,8 +1,17 @@
 # django
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
 
 from userprofile import forms
+
+
+class LoginRequiredMixin(object):
+    """User must be logged in to access this view."""
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 @login_required
