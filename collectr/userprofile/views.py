@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 
 from userprofile import forms
 
@@ -21,24 +21,30 @@ def home(request):
     return render(request, 'userprofile/home.html')
 
 
-@login_required
-def rss(request):
-    form = forms.RssForm(request.user, data=request.POST or None)
-    if request.method == 'POST' and form.is_valid():
+class SelectRSSView(LoginRequiredMixin, FormView):
+
+    form_class = forms.RssForm
+    template_name = 'userprofile/rss.html'
+
+    def get_success_url(self):
+        return reverse('userprofile:rss')
+
+    def get_form_kwargs(self):
+        kwargs = super(SelectRSSView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def form_valid(self, form):
         to_add = form.cleaned_data['feeds']
         to_del = list(set(form.fields['feeds'].initial) - set(to_add))
 
         for feed in to_add:
-            feed.users.add(request.user)
+            feed.users.add(self.request.user)
 
         for feed in to_del:
-            feed.users.remove(request.user)
-        return redirect('userprofile:rss')
+            feed.users.remove(self.request.user)
 
-    data = {
-        'form': form,
-    }
-    return render(request, 'userprofile/rss.html', data)
+        super(SelectRSSView, self).form_valid(self, form)
 
 
 class AddRSSView(LoginRequiredMixin, CreateView):

@@ -58,7 +58,8 @@ class RssForm(forms.Form):
     feeds = forms.ModelMultipleChoiceField(queryset=source_models.Rss.objects.all(),
         widget=TableCheckboxSelectMultiple)
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(RssForm, self).__init__(*args, **kwargs)
         self.fields['feeds'].initial = source_models.Rss.objects.filter(users=user)
 
