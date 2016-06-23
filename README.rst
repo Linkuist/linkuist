@@ -1,6 +1,18 @@
 Collectr: collect and browse your links
 =======================================
 
+.. image:: https://travis-ci.org/EvaSDK/collectr.svg?branch=master
+   :target: https://travis-ci.org/EvaSDK/collectr
+   :alt: Build Status
+
+.. image:: https://coveralls.io/repos/github/EvaSDK/collectr/badge.svg
+   :target: https://coveralls.io/github/EvaSDK/collectr
+   :alt: Coverage Status
+
+.. image:: https://www.versioneye.com/user/projects/576bd11acd6d5100372eab2c/badge.svg
+   :target: https://www.versioneye.com/user/projects/576bd11acd6d5100372eab2c
+   :alt: Dependency Status
+
 Collectr is a project that aims to collect and asynchronously process your links, to sum them up.
 
 It's a django based project, and nvie/rq is used to process everything asynchronously.
