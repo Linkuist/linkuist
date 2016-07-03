@@ -15,7 +15,7 @@ from multiprocessing import Pool
 # 3rdparty
 import tweepy
 from redis import Redis
-from rq import use_connection, Queue
+from rq import Queue
 
 # django
 from django.conf import settings
@@ -55,7 +55,8 @@ class TwitterListener(tweepy.streaming.StreamListener):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super(TwitterListener, self).__init__(*args, **kwargs)
-        self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
+        self.queue = Queue('link_indexing',
+                           connection=Redis(**settings.RQ_DATABASE))
 
     def on_error(self, status_code):
         logger.error("Twitter error with status code %s", status_code)
@@ -63,8 +64,12 @@ class TwitterListener(tweepy.streaming.StreamListener):
     def on_status(self, status):
         if hasattr(status, 'entities') and 'urls' in status.entities:
             logger.info("adding task called %s for %s" % (datetime.now(), self.user.username))
-            self.q.enqueue_call(func=index_url, args=(status, self.user.pk, datetime.now(),
-                    status.user.screen_name, "twitter"), timeout=60)
+            self.queue.enqueue_call(
+                func=index_url,
+                args=(status, self.user.pk, datetime.now(),
+                      status.user.screen_name, "twitter"),
+                timeout=60
+            )
         else:
             logger.info("tweet ignored")
 
