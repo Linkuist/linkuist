@@ -12,8 +12,8 @@ import requests_mock
 from source import factories as source_factories
 from source import models as source_models
 
-
 from .link import Link, LinkExtractor
+from .oembed import resolve
 from .process import index_url
 
 
@@ -124,3 +124,51 @@ class IndexUrlTestCase(TransactionTestCase):
         index_url(url, self.user.id, timezone.now(), self.author.name, self.source.name)
         lsum = source_models.LinkSum.objects.select_related('collection').get(url__link=url)
         self.assertEqual(mfilter.to_collection, lsum.collection)
+
+
+class OembedTestCase(unittest.TestCase):
+
+    def test_flickr_oembed(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('http://flickr.com/services/oembed',
+                     text='{}',
+                     headers={'Content-Type': 'application/json'})
+
+            res = resolve('http://www.flickr.com/photos/vineolia/7052933661/sizes/c/in/set-72157629134495052/')
+            self.assertIsNotNone(res)
+
+    def test_youtube_oembed(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('http://www.youtube.com/oembed',
+                     text='{}',
+                     headers={'Content-Type': 'application/json'})
+
+            res = resolve('https://www.youtube.com/watch?v=w9n7KNnFNU8')
+            self.assertIsNotNone(res)
+
+    def test_dailymotion_oembed(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('http://www.dailymotion.com/services/oembed',
+                     text='{}',
+                     headers={'Content-Type': 'application/json'})
+
+            res = resolve('http://www.dailymotion.com/video/xve2xv_zapping-tele-du-26-11-2012_tv')
+            self.assertIsNotNone(res)
+
+    def test_vimeo_oembed(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('http://vimeo.com/api/oembed.json',
+                     text='{}',
+                     headers={'Content-Type': 'application/json'})
+
+            res = resolve('http://vimeo.com/53578987')
+            self.assertIsNotNone(res)
+
+    def test_soundcloud_oembed(self):
+        with requests_mock.Mocker() as mock:
+            mock.get('http://soundcloud.com/oembed',
+                     text='{}',
+                     headers={'Content-Type': 'application/json'})
+
+            res = resolve('http://soundcloud.com/pissedoffgil/speakers-so-lowd')
+            self.assertIsNotNone(res)
