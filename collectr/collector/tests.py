@@ -19,13 +19,15 @@ import feedparser
 
 class RssCollectorTestCase(TestCase):
 
-    def __init__(self, *args, **kwargs):
-        super(RssCollectorTestCase, self).__init__(*args, **kwargs)
+    def setUp(self):
+        super(RssCollectorTestCase, self).setUp()
         self.rss = None
         self.redis_client = redis.Redis(**settings.RQ_DATABASE)
+        self.redis_client.flushdb()
 
     def tearDown(self):
         self.redis_client.flushdb()
+        super(RssCollectorTestCase, self).tearDown()
 
     def make_initial_rss(self):
         self.rss = source_factories.RssFactory()
