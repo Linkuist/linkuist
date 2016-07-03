@@ -7,7 +7,6 @@
 
 import json
 import logging
-import os
 import time
 from datetime import datetime
 from multiprocessing import Pool
@@ -20,7 +19,7 @@ from rq import Queue
 # django
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from social_auth.models import UserSocialAuth
 
 # project
