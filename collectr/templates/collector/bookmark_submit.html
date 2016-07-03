@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %} - Bookmark submission{% endblock title %}
+
+{% block container-fluid %}
+
+<div class="hero-unit">
+  <h1>Bookmark submitted</h1>
+  <p>
+    {% blocktrans %}Your bookmark has been submitted and will be processed shorlty.{% endblocktrans %}
+  </p>
+  <p>
+    {% url "home" as homelink %}
+    {% blocktrans %}Once processed, it will appear on your <a href="{{ homelink }}">Home page</a>. In the meantime, you may <a href="javascript:history.back()">go back</a> to where you came from to continue reading.{%endblocktrans %}
+  </p>
+</div>
+
+{% endblock container-fluid %}

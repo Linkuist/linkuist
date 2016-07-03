@@ -3,12 +3,14 @@
 """
 
 from django.conf import settings
-from django.test import TestCase
+from django.core.urlresolvers import reverse
+from django.test import TestCase, TransactionTestCase
 
 import redis
 
 from source import models as source_models
 from source import factories as source_factories
+from userprofile.models import UserProfile
 
 from . import rss as rss_module
 
@@ -50,3 +52,46 @@ class RssCollectorTestCase(TestCase):
         )
         job_len = len(self.redis_client.keys('rq:job:*'))
         self.assertEqual(job_len, expected_jobs_len)
+
+
+class CollectorViewTest(TransactionTestCase):
+
+    def setUp(self):
+        self.user = source_factories.UserFactory()
+        self.user.set_password('toto')
+        self.user.save()
+        self.client.login(username=self.user.username, password='toto')
+
+    def test_submit_nolink(self):
+        response = self.client.get(reverse('collector:bookmark',
+                                           args=(self.user.username,)))
+        self.assertEqual(response.status_code, 400)
+
+    def test_submit_invalid_token(self):
+        response = self.client.get(
+            reverse('collector:bookmark', args=(self.user.username,)) + "?" +
+            "&".join(
+                key + '=' + value for key, value in {
+                    'url': 'http://www.moto-net.com/rss_actu.xml',
+                    'from': 'me',
+                    'source': 'all',
+                    'token': 'pazoeiazeip',
+                }.items()
+            ))
+        self.assertEqual(response.status_code, 403)
+
+    def test_submit_success(self):
+        uprofile = UserProfile(user=self.user, token='randomtoken')
+        uprofile.save()
+
+        response = self.client.get(
+            reverse('collector:bookmark', args=(self.user.username,)) + "?" +
+            "&".join(
+                key + '=' + value for key, value in {
+                    'url': 'http://www.moto-net.com/rss_actu.xml',
+                    'from': 'me',
+                    'source': 'all',
+                    'token': 'randomtoken',
+                }.items()
+            ))
+        self.assertEqual(response.status_code, 202)

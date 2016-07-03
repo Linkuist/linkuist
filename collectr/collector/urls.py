@@ -5,6 +5,6 @@ from django.conf.urls.defaults import patterns, include, url
 from collector import views
 
 urlpatterns = patterns('',
-    url(r'^bookmark/(?P<username>\w+)/$', views.secret_bookmark, name="bookmark"),
+    url(r'^bookmark/(?P<username>\w+)/$', views.SubmitBookmarkView.as_view(), name="bookmark"),
 )
 
