@@ -26,7 +26,6 @@ from social_auth.models import UserSocialAuth
 # project
 from semantism.process import index_url
 
-
 logger = logging.getLogger('tweet_collector')
 
 CONSUMER_KEY = settings.TWITTER_CONSUMER_KEY
@@ -42,7 +41,8 @@ class Command(BaseCommand):
         if not user_list:
             user_list = UserSocialAuth.objects.values_list('user__username',
                     flat=True).filter(provider='twitter')
-        logger.info("running for %s" % ", ".join(user_list))
+        logger.info("Running Twitter URL collector for %s",
+                    ", ".join(user_list))
 
         pool = Pool()
         pool.map(run_process, user_list)
@@ -63,7 +63,8 @@ class TwitterListener(tweepy.streaming.StreamListener):
 
     def on_status(self, status):
         if hasattr(status, 'entities') and 'urls' in status.entities:
-            logger.info("adding task called %s for %s" % (datetime.now(), self.user.username))
+            logger.info("Indexing tweet %s for %s",
+                        str(status), self.user.username)
             self.queue.enqueue_call(
                 func=index_url,
                 args=(status, self.user.pk, datetime.now(),
@@ -78,7 +79,7 @@ def run_process(username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        print "User %s does not exist" % uername
+        logger.error("User %s does not exist", username)
         return -1
 
     auth_dict = UserSocialAuth.objects.values().get(user__id=user.pk, provider='twitter')['extra_data']
@@ -97,8 +98,6 @@ def run_process(username):
             stream.userstream()
         except KeyboardInterrupt:
             break
-        except Exception, exc:
-            print username, exc
+        except Exception:
+            logger.exception('Error while following tweets for %s', username)
             time.sleep(20)
-
-
