@@ -9,9 +9,8 @@ import json
 import logging
 import os
 import time
-
 from datetime import datetime
-from multiprocessing import Process
+from multiprocessing import Pool
 
 # 3rdparty
 import tweepy
@@ -45,15 +44,10 @@ class Command(BaseCommand):
                     flat=True).filter(provider='twitter')
         logger.info("running for %s" % ", ".join(user_list))
 
-        processes = []
-        for user in user_list:
-            p = Process(target=run_process, args=(user,))
-            p.start()
-            processes.append(p)
-
-        for process in processes:
-            process.join()
-
+        pool = Pool()
+        pool.map(run_process, user_list)
+        pool.close()
+        pool.join()
 
 
 class TwitterListener(tweepy.streaming.StreamListener):
