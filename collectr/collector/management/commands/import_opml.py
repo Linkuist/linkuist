@@ -21,6 +21,7 @@ import opml
 
 # django
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand, CommandError
 
 # semantism
 from source.models import Rss
@@ -36,13 +37,19 @@ def parse_outline(outline, user):
         rss.save()
         print "%s added for user %s" % (outline.xmlUrl, user.username)
 
-if __name__ == "__main__":
 
-    username = sys.argv[1]
-    opml_file = sys.argv[2]
+class Command(BaseCommand):
+    args = '<url> <username>'
+    help = 'Imports Atom/RSS feeds from OPML file'
 
-    user = User.objects.get(username=username)
+    def handle(self, *args, **kwargs):
+        opml_file, username = args
 
-    outlines = opml.parse(opml_file)
-    for outline in outlines:
-        parse_outline(outline, user)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise CommandError('User {0} does not exist'.format(username))
+
+        outlines = opml.parse(opml_file)
+        for outline in outlines:
+            parse_outline(outline, user)
