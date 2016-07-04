@@ -25,7 +25,8 @@ def parse_outline(outline, user, stats):
         for o in outline:
             parse_outline(o, user, stats)
 
-    if getattr(outline, "type", "notype") == "rss":
+    # type attribute is not really defined by OPML specification
+    if getattr(outline, "type", "notype").lower() == ("atom", "link", "rss"):
         rss, created = Rss.objects.get_or_create(link=outline.url,
                                                  name=outline.text)
         rss.users.add(user)
