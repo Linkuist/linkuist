@@ -4,18 +4,6 @@
 
 """
 
-import os
-import sys
-
-sys.path.append('../')
-sys.path.append('../../')
-
-os.environ['DJANGO_SETTINGS_MODULE'] ='collectr.settings'
-
-from collectr import settings
-from django.core.management import setup_environ
-setup_environ(settings)
-
 # 3rd party
 import opml
 
@@ -23,8 +11,9 @@ import opml
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
-# semantism
+# collectr
 from source.models import Rss
+
 
 def parse_outline(outline, user):
     if hasattr(outline, "title"):
