@@ -4,6 +4,8 @@
 
 """
 
+import logging
+
 # 3rd party
 import opml
 
@@ -13,6 +15,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 # collectr
 from source.models import Rss
+
+logger = logging.getLogger(__name__)
 
 
 def parse_outline(outline, user):
@@ -24,7 +28,7 @@ def parse_outline(outline, user):
                 name=outline.title)
         rss.users.add(user)
         rss.save()
-        print "%s added for user %s" % (outline.xmlUrl, user.username)
+        logger.info("%s added for user %s", outline.xmlUrl, user.username)
 
 
 class Command(BaseCommand):
