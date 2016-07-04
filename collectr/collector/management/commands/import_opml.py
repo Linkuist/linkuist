@@ -5,6 +5,7 @@
 """
 
 import logging
+from collections import defaultdict
 
 # 3rd party
 import opml
@@ -19,16 +20,21 @@ from source.models import Rss
 logger = logging.getLogger(__name__)
 
 
-def parse_outline(outline, user):
-    if hasattr(outline, "title"):
-        for o in outline._outlines:
-            parse_outline(o, user)
-    if hasattr(outline, "type") and outline.type == "rss":
-        rss, created = Rss.objects.get_or_create(link=outline.xmlUrl,
-                name=outline.title)
+def parse_outline(outline, user, stats):
+    if len(outline):
+        for o in outline:
+            parse_outline(o, user, stats)
+
+    if getattr(outline, "type", "notype") == "rss":
+        rss, created = Rss.objects.get_or_create(link=outline.url,
+                                                 name=outline.text)
         rss.users.add(user)
         rss.save()
-        logger.info("%s added for user %s", outline.xmlUrl, user.username)
+        if created:
+            stats['created'] += 1
+        else:
+            stats['existing'] += 1
+        logger.info("%s added for user %s", outline.url, user.username)
 
 
 class Command(BaseCommand):
@@ -43,6 +49,12 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             raise CommandError('User {0} does not exist'.format(username))
 
+        stats = defaultdict(int)
         outlines = opml.parse(opml_file)
         for outline in outlines:
-            parse_outline(outline, user)
+            parse_outline(outline, user, stats)
+
+        self.stdout.write(
+            'Imported %d new feeds from %s (%d already present)' %
+            (stats['created'], opml_file, stats['existing'])
+        )

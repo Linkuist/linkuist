@@ -21,4 +21,4 @@ django-tastypie ==0.9.12
 psycopg2 >=2.5
 goose-extractor==1.0.1
 feedparser==5.1.3
-opml >= 0
+opml >= 0.5
