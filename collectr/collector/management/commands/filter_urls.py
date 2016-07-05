@@ -20,8 +20,6 @@ def re_filter(username):
         .select_related('collection') \
         .filter(user__username=username)
     links = LinkSum.objects.filter(user__username=username)
-    all_collect = Collection.objects.get(name__iexact="all",
-                                         user__username=username)
 
     for filtr in filters:
         qs_args = {
