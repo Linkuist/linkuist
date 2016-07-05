@@ -1,4 +1,4 @@
-Django >=1.5, <1.6
+Django >=1.9
 PyYAML >=3.10
 South >=0.7.5, <0.8
 certifi >=0.0.8
