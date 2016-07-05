@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from userprofile import models
+from . import models
 
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'token']

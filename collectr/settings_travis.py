@@ -1,4 +1,4 @@
-from settings import *
+from collectr.settings import *
 
 DATABASES = {
     'default': {

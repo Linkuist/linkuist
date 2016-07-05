@@ -20,13 +20,13 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'collectr.settings'
 from django.db.models import Q
 
 # collectr
-from source.models import (Author, Source, LinkSum, Filter,
+from collectr.source.models import (Author, Source, LinkSum, Filter,
                            Collection, Url, UrlViews)
 
 # semantism
-from semantism.link import LinkExtractor
-from semantism import exceptions as index_exc
-from semantism import oembed
+from . import exceptions as index_exc
+from . import oembed
+from .link import LinkExtractor
 
 logger = logging.getLogger('index_url')
 logger.setLevel(logging.DEBUG)

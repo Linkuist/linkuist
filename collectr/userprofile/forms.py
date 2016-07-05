@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 # source
 
-from source import models as source_models
+from collectr.source import models as source_models
 
 
 class TableCheckboxSelectMultiple(forms.SelectMultiple):
@@ -69,5 +69,5 @@ class AddRssForm(forms.ModelForm):
     class Meta:
         model = source_models.Rss
         fields = ['link', 'name']
-    
+
 

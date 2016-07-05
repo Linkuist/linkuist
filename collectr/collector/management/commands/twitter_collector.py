@@ -23,7 +23,7 @@ from django.core.management.base import BaseCommand
 from social.apps.django_app.default.models import UserSocialAuth
 
 # project
-from semantism.process import index_url
+from collectr.semantism.process import index_url
 
 logger = logging.getLogger('tweet_collector')
 

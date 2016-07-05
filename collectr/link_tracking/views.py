@@ -1,7 +1,7 @@
 # Create your views here.
 from django.shortcuts import redirect
 
-from source.models import LinkSum, UrlViews
+from collectr.source.models import LinkSum, UrlViews
 
 
 def track_link(request, link_id):

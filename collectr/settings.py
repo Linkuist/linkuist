@@ -76,19 +76,18 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    
+
     # External Django apps
     'django_extensions',
     'south',
     'social.apps.django_app.default',
-    
     # Project apps
-    'collector',
-    'source',
-    'userprofile',
-    'link_tracking',
-    'semantism',
-    'webfront',
+    'collectr.collector',
+    'collectr.source',
+    'collectr.userprofile',
+    'collectr.link_tracking',
+    'collectr.semantism',
+    'collectr.webfront',
     'tastypie',
 )
 

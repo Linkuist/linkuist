@@ -18,7 +18,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 # collectr
-from collector.rss import fetch_rss
+from collectr.collector.rss import fetch_rss
 
 
 class Command(BaseCommand):

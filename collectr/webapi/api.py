@@ -15,7 +15,7 @@ from tastypie.authorization import Authorization
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie.utils import trailing_slash
 
-from source import models as source_models
+from collectr.source import models as source_models
 
 
 class UserResource(ModelResource):

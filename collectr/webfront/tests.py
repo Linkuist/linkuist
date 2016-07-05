@@ -2,16 +2,17 @@
     Test for our webfront app
 """
 
-from django.test import TestCase
+from django import test
 
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 
-from source import factories as source_factories
-from webfront import views as webfront_views
+from collectr.source import factories as source_factories
+
+from . import views
 
 
-class WebfrontTestCase(TestCase):
+class WebfrontTestCase(test.TestCase):
 
     def setUp(self):
         user = source_factories.UserFactory()
@@ -47,7 +48,6 @@ class WebfrontTestCase(TestCase):
         response = self.client.get(reverse('webfront:links_today', args=('last_week',)))
         self.assertEqual(response.status_code, 200)
 
-
     def test_links_today_month(self):
         response = self.client.get(reverse('webfront:links_today', args=('this_month',)))
         self.assertEqual(response.status_code, 200)
@@ -55,36 +55,35 @@ class WebfrontTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-
-class WebfrontPaginationTestCase(TestCase):
+class WebfrontPaginationTestCase(test.TestCase):
 
     def test_pagination_start(self):
         paginator = Paginator(xrange(500), 10)
-        page_range = webfront_views.get_display_paginate_item(paginator, 1)
+        page_range = views.get_display_paginate_item(paginator, 1)
         self.assertEqual(page_range, [1, 2, 3, 4, 5, '...', 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 2)
+        page_range = views.get_display_paginate_item(paginator, 2)
         self.assertEqual(page_range, [1, 2, 3, 4, 5, '...', 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 3)
+        page_range = views.get_display_paginate_item(paginator, 3)
         self.assertEqual(page_range, [1, 2, 3, 4, 5, '...', 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 4)
+        page_range = views.get_display_paginate_item(paginator, 4)
         self.assertEqual(page_range, [1, 2, 3, 4, 5, '...', 50])
 
     def test_pagination_middle(self):
         paginator = Paginator(xrange(500), 10)
-        page_range = webfront_views.get_display_paginate_item(paginator, 5)
+        page_range = views.get_display_paginate_item(paginator, 5)
         self.assertEqual(page_range, [1, '...', 3, 4, 5, 6, 7, '...', 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 40)
+        page_range = views.get_display_paginate_item(paginator, 40)
         self.assertEqual(page_range, [1, '...', 38, 39, 40, 41, 42, '...', 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 46)
+        page_range = views.get_display_paginate_item(paginator, 46)
         self.assertEqual(page_range, [1, '...', 44, 45, 46, 47, 48, '...', 50])
 
     def test_pagination_end(self):
         paginator = Paginator(xrange(500), 10)
-        page_range = webfront_views.get_display_paginate_item(paginator, 47)
+        page_range = views.get_display_paginate_item(paginator, 47)
         self.assertEqual(page_range, [1, '...', 46, 47, 48, 49, 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 48)
+        page_range = views.get_display_paginate_item(paginator, 48)
         self.assertEqual(page_range, [1, '...', 46, 47, 48, 49, 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 49)
+        page_range = views.get_display_paginate_item(paginator, 49)
         self.assertEqual(page_range, [1, '...', 46, 47, 48, 49, 50])
-        page_range = webfront_views.get_display_paginate_item(paginator, 50)
+        page_range = views.get_display_paginate_item(paginator, 50)
         self.assertEqual(page_range, [1, '...', 46, 47, 48, 49, 50])

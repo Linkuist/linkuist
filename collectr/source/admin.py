@@ -7,7 +7,8 @@
 from django.contrib import admin
 from django.contrib import sites
 # local
-from source import models
+
+from . import models
 
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ('user', 'name')

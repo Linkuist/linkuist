@@ -1,7 +1,8 @@
 import factory
 
+from collectr.source import factories as source_factories
+
 from .models import UserProfile
-import source.factories as source_factories
 
 
 class UserProfileFactory(factory.DjangoModelFactory):

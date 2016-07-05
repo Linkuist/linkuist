@@ -27,8 +27,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'collectr.settings'
 from django.conf import settings
 
 # semantism
-from source.models import Rss
-from semantism.process import index_url
+from collectr.source.models import Rss
+from collectr.semantism.process import index_url
 
 
 def fetch_rss():

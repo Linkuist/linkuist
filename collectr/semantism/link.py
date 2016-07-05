@@ -17,7 +17,7 @@ import requests
 from goose import Goose
 
 # local
-from semantism import exceptions as index_exc
+from . import exceptions as index_exc
 
 logger = logging.getLogger(__name__)
 

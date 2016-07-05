@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.contrib.auth.views import login, logout
 
 # localapp
-from webfront import views
+from collectr.webfront import views
 
 urlpatterns = patterns('',
     url(r'^$', views.home, name="home"),

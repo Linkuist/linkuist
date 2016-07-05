@@ -9,8 +9,8 @@ from django.test import TestCase
 
 # project
 import requests_mock
-from source import factories as source_factories
-from source import models as source_models
+from collectr.source import factories as source_factories
+from collectr.source import models as source_models
 
 from .link import Link, LinkExtractor
 from .oembed import resolve

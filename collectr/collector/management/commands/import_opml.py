@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
 # collectr
-from source.models import Rss
+from collectr.source.models import Rss
 
 logger = logging.getLogger(__name__)
 

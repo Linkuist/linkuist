@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 from redis import Redis
 from rq import Queue, Connection
 
-from semantism.process import index_url
+from collectr.semantism.process import index_url
 
 
 class AcceptTemplateResponse(TemplateResponse):

@@ -17,8 +17,8 @@ from redis import Redis
 from rq import Queue, use_connection
 from social.apps.django_app.utils import load_strategy
 
-from semantism.process import index_url
-from source import models as source_models
+from collectr.semantism.process import index_url
+from collectr.source import models as source_models
 
 logger = logging.getLogger('collector.reddit')
 

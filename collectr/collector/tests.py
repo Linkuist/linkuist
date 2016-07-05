@@ -8,9 +8,9 @@ from django.test import TestCase
 
 import redis
 
-from source import models as source_models
-from source import factories as source_factories
-from userprofile.models import UserProfile
+from collectr.source import models as source_models
+from collectr.source import factories as source_factories
+from collectr.userprofile.models import UserProfile
 
 from . import rss as rss_module
 

@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, include
 
 from tastypie.api import Api
 
-from webapi import api
+from collectr.webapi import api
 
 v1_api = Api(api_name='1.0')
 v1_api.register(api.LinkSumResource())

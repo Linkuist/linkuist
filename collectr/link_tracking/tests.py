@@ -5,7 +5,7 @@
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from source import factories as source_factories
+from collectr.source import factories as source_factories
 
 
 class LinkTrackingTestCase(TestCase):

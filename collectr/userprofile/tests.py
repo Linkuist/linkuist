@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 
-from source import factories as source_factories
+from collectr.source import factories as source_factories
 
 
 class RssTestCase(TestCase):
@@ -19,11 +19,11 @@ class RssTestCase(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
-        
+
         result = self.client.login(username=self.user.username, password='toto')
         self.assertTrue(result)
         response = self.client.get(url)
-        
+
         self.assertEqual(response.status_code, 200)
 
         data = {

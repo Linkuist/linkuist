@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic.edit import CreateView, FormView
 
-from userprofile import forms
+from . import forms
 
 
 class LoginRequiredMixin(object):
