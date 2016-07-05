@@ -1,7 +1,6 @@
 --- #YAML:1.1
 language: python
 python:
-    - "2.6"
     - "2.7"
 env:
     - DB=postgres
@@ -13,12 +12,12 @@ notifications:
         on_success: always
         on_failure: always
 
-install: 
+install:
     - "pip install -r requirements/base.txt --use-mirrors"
     - "pip install -r requirements/tests.txt --use-mirrors"
     - pip install coveralls
 script:
-    - "cd collectr" 
+    - "cd collectr"
     - "python manage.py syncdb --settings=settings_travis --noinput"
     - "python manage.py migrate --settings=settings_travis"
     - "coverage run manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront"
