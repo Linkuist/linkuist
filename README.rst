@@ -1,16 +1,16 @@
 Collectr: collect and browse your links
 =======================================
 
-.. image:: https://travis-ci.org/EvaSDK/collectr.svg?branch=master
-   :target: https://travis-ci.org/EvaSDK/collectr
+.. image:: https://travis-ci.org/Linkuist/linkuist.svg?branch=master
+   :target: https://travis-ci.org/Linkuist/linkuist
    :alt: Build Status
 
-.. image:: https://coveralls.io/repos/github/EvaSDK/collectr/badge.svg
-   :target: https://coveralls.io/github/EvaSDK/collectr
+.. image:: https://coveralls.io/repos/github/Linkuist/linkuist/badge.svg
+   :target: https://coveralls.io/github/Linkuist/linkuist
    :alt: Coverage Status
 
-.. image:: https://www.versioneye.com/user/projects/576bd11acd6d5100372eab2c/badge.svg
-   :target: https://www.versioneye.com/user/projects/576bd11acd6d5100372eab2c
+.. image:: https://www.versioneye.com/user/projects/577c2289b50608003eee0120/badge.svg
+   :target: https://www.versioneye.com/user/projects/577c2289b50608003eee0120
    :alt: Dependency Status
 
 Collectr is a project that aims to collect and asynchronously process your links, to sum them up.
