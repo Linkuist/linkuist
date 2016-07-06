@@ -5,14 +5,19 @@
 
 {% block container-fluid %}
 <ul>
-  {% if 'twitter' in social_auth.backends %}
+  {% if 'google-oauth2' in backends.backends %}
   <li>
-    <a href="{% url 'socialauth_begin' 'twitter' %}">Enter using Twitter</a>
+    <a href="{% url 'social:begin' 'google-oauth2' %}">Enter using Google</a>
   </li>
   {% endif %}
-  {% if 'reddit' in social_auth.backends %}
+  {% if 'reddit' in backends.backends %}
   <li>
-    <a href="{% url 'socialauth_begin' 'reddit' %}">Enter using Reddit</a>
+    <a href="{% url 'social:begin' 'reddit' %}">Enter using Reddit</a>
+  </li>
+  {% endif %}
+  {% if 'twitter' in backends.backends %}
+  <li>
+    <a href="{% url 'social:begin' 'twitter' %}">Enter using Twitter</a>
   </li>
   {% endif %}
 </ul>

@@ -80,7 +80,7 @@ INSTALLED_APPS = (
     # External Django apps
     'django_extensions',
     'south',
-    'social_auth',
+    'social.apps.django_app.default',
     
     # Project apps
     'collector',
@@ -94,8 +94,10 @@ INSTALLED_APPS = (
 
 
 AUTHENTICATION_BACKENDS = (
-    'social_auth.backends.twitter.TwitterBackend',
-    'social_auth.backends.reddit.RedditBackend',
+    'social.backends.google.GoogleOAuth2',
+    'social.backends.reddit.RedditOAuth2',
+    'social.backends.twitter.TwitterOAuth',
+
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -107,9 +109,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
    "django.core.context_processors.media",
    "django.core.context_processors.static",
    "django.contrib.messages.context_processors.messages",
-   'social_auth.context_processors.social_auth_by_name_backends',
-   'social_auth.context_processors.social_auth_backends',
-   #'social_auth.context_processors.social_auth_by_type_backends',
+    "social.apps.django_app.context_processors.backends",
+    "social.apps.django_app.context_processors.login_redirect",
 )
 
 LOGIN_URL = '/login/'
@@ -151,12 +152,19 @@ LOGGING = {
 }
 
 
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
 
-REDDIT_APP_ID = ''
-REDDIT_API_SECRET = ''
-REDDIT_AUTH_EXTRA_ARGUMENTS = {'duration': 'permanent'}
+SOCIAL_AUTH_REDDIT_KEY = ''
+SOCIAL_AUTH_REDDIT_SECRET = ''
+# SOCIAL_AUTH_REDDIT_AUTH_EXTRA_ARGUMENTS = {'duration': 'permanent'}
+
+SOCIAL_AUTH_TWITTER_KEY = ''
+SOCIAL_AUTH_TWITTER_SECRET = ''
+
+SOUTH_MIGRATION_MODULES = {
+    'default': 'social.apps.django_app.default.south_migrations'
+}
 
 SOUTH_TESTS_MIGRATE = False
 
