@@ -64,7 +64,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'collectr.urls'
 
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_PATH, "templates")
+    os.path.join(PROJECT_PATH, "templates"),
 )
 
 INSTALLED_APPS = (
