@@ -9,7 +9,3 @@ DATABASES = {
 }
 
 SECRET_KEY = 'j!v*yjq%gals10eqa(04kur*_yl#9!o!#b^^8vnxzky5q=#wb$'
-
-
-SKIP_SOUTH_TESTS = True
-SOUTH_TESTS_MIGRATE = True

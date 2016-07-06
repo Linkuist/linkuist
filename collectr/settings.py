@@ -79,7 +79,6 @@ INSTALLED_APPS = (
 
     # External Django apps
     'django_extensions',
-    'south',
     'social.apps.django_app.default',
     # Project apps
     'collectr.collector',
@@ -164,11 +163,6 @@ SOCIAL_AUTH_REDDIT_AUTH_EXTRA_ARGUMENTS = {
 SOCIAL_AUTH_TWITTER_KEY = ''
 SOCIAL_AUTH_TWITTER_SECRET = ''
 
-SOUTH_MIGRATION_MODULES = {
-    'default': 'social.apps.django_app.default.south_migrations'
-}
-
-SOUTH_TESTS_MIGRATE = False
 
 try:
     from settings_local import *
