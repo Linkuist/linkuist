@@ -12,11 +12,22 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<ul>
-  <li>
-    <a href="{% url 'socialauth_begin' 'twitter' %}">Enter using Twitter</a>
-  </li>
-</ul>
+
+{% if 'google-oauth2' in backends.backends %}
+<li>
+<a href="{% url 'social:begin' 'google-oauth2' %}">Enter using Google</a>
+</li>
+{% endif %}
+{% if 'reddit' in backends.backends %}
+<li>
+<a href="{% url 'social:begin' 'reddit' %}">Enter using Reddit</a>
+</li>
+{% endif %}
+{% if 'twitter' in backends.backends %}
+<li>
+<a href="{% url 'social:begin' 'twitter' %}">Enter using Twitter</a>
+</li>
+{% endif %}
 
 
 
