@@ -1,11 +1,11 @@
 # django
-from django.conf.urls.defaults import patterns, include, url
-from django.contrib.auth.views import login, logout
+from django.conf.urls import url
+from django.contrib.auth.views import login
 
 # localapp
 from collectr.webfront import views
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', views.home, name="home"),
     url(r'^search/$', views.SearchView.as_view(), name="search"),
     url(r'^login/$', login, {'template_name': 'webfront/login.html'}, name="login"),
@@ -16,4 +16,4 @@ urlpatterns = patterns('',
     url(r'^collection/source/(?P<source>\w+)/$', views.SourceView.as_view(), name="collection_source"),
     url(r'^collection/tag/(?P<tag>.*)/$', views.CollectionTagView.as_view(), name="collection_tag"),
     url(r'^collection/user/(?P<user>.*)/(?P<source>\w+)/$', views.CollectionUserView.as_view(), name="collection_user"),
-)
+]

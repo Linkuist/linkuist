@@ -1,5 +1,5 @@
 # django
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls import include, url
 
 from tastypie.api import Api
 
@@ -14,6 +14,6 @@ v1_api.register(api.SourceResource())
 v1_api.register(api.UserResource())
 
 
-urlpatterns = patterns('',
-    (r'^', include(v1_api.urls)),
-)
+urlpatterns = [
+    url(r'^', include(v1_api.urls)),
+]

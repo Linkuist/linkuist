@@ -1,10 +1,10 @@
 # django
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import url
 
 # localapp
 from . import views
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^bookmark/(?P<username>\w+)/$', views.SubmitBookmarkView.as_view(), name="bookmark"),
-)
+]
 

@@ -1,11 +1,10 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from django.contrib import sites
 admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = [
     # Examples:
     # url(r'^$', 'collectr.views.home', name='home'),
     # url(r'^collectr/', include('collectr.foo.urls')),
@@ -16,10 +15,9 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     url(r'', include('social.apps.django_app.urls', namespace='social')),
-
-    url(r'', include('webfront.urls', namespace='webfront')),
-    url(r'', include('link_tracking.urls', namespace='link_tracking')),
-    url(r'^collector/', include('collector.urls', namespace='collector')),
-    url(r'^profile/', include('userprofile.urls', namespace='userprofile')),
-    url(r'^api/', include('webapi.urls')),
-)
+    url(r'', include('collectr.webfront.urls', namespace='webfront')),
+    url(r'', include('collectr.link_tracking.urls', namespace='link_tracking')),
+    url(r'^collector/', include('collectr.collector.urls', namespace='collector')),
+    url(r'^profile/', include('collectr.userprofile.urls', namespace='userprofile')),
+    url(r'^api/', include('collectr.webapi.urls')),
+]

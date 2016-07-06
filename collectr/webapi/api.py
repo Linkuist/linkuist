@@ -1,5 +1,5 @@
 # django
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.db.models import Q
