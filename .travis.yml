@@ -14,9 +14,12 @@ notifications:
         on_failure: always
 
 install:
-    - "pip install -r requirements/base.txt --use-mirrors"
-    - "pip install -r requirements/tests.txt --use-mirrors"
-    - pip install coveralls
+    - "pip install pip --upgrade"
+    - "pip install -r requirements/base.txt"
+    - "pip install -r requirements/2nd-pass.txt"
+    - "pip install -r requirements/tests.txt"
+    - "yes | pip uninstall South || true"
+    - "pip install coveralls"
 script:
     - "cd collectr"
     - "python manage.py syncdb --settings=settings_travis --noinput"
