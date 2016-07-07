@@ -5,27 +5,28 @@ python:
     - "2.7"
 env:
     - DB=postgres
-before_script:
-    - psql -c 'create database collectr;' -U postgres
-notifications:
-    irc:
-        channels: "irc.freenode.org#linkuist"
-        on_success: always
-        on_failure: always
 
 install:
     - "pip install pip --upgrade"
     - "pip install -r requirements/base.txt"
     - "pip install -r requirements/2nd-pass.txt"
     - "pip install -r requirements/tests.txt"
-    - "yes | pip uninstall South || true"
     - "pip install coveralls"
+
+before_script:
+    - psql -c 'create database collectr;' -U postgres
+
 script:
-    - "cd collectr"
-    - "python manage.py syncdb --settings=settings_travis --noinput"
-    - "python manage.py migrate --settings=settings_travis"
-    - "coverage run manage.py test source --settings=settings_travis collector source userprofile link_tracking semantism webfront"
+    - "coverage run manage.py test --settings='collectr.settings_travis'"
+
 services:
     - redis-server
+
 after_success:
     - coveralls
+
+notifications:
+    irc:
+        channels: "irc.freenode.org#linkuist"
+        on_success: always
+        on_failure: always
