@@ -3,8 +3,10 @@
     Tests for semantism app
 """
 
+import unittest
+
 # django
-from django.utils import unittest, timezone
+from django.utils import timezone
 from django.test import TestCase
 
 # project

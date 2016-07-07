@@ -1,7 +1,7 @@
 import factory
 
-from django.contrib.webdesign import lorem_ipsum
 from django.contrib.auth.models import User
+from django.utils import lorem_ipsum
 
 from . import models
 
