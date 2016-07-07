@@ -82,7 +82,7 @@ class BaseLinkSumView(ListView):
         return queryset \
             .filter(user=self.request.user) \
             .filter(hidden=False) \
-            .select_related('authors')
+            .prefetch_related('authors')
 
     def get_context_data(self, **kwargs):
         # TODO: handle filter on read/unread/all
