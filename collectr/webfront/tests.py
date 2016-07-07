@@ -2,7 +2,7 @@
     Test for our webfront app
 """
 
-from django import test
+from django.test import TestCase
 
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
@@ -12,7 +12,7 @@ from collectr.source import factories as source_factories
 from . import views
 
 
-class WebfrontTestCase(test.TestCase):
+class WebfrontTestCase(TestCase):
 
     def setUp(self):
         user = source_factories.UserFactory()
@@ -55,7 +55,7 @@ class WebfrontTestCase(test.TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class WebfrontPaginationTestCase(test.TestCase):
+class WebfrontPaginationTestCase(TestCase):
 
     def test_pagination_start(self):
         paginator = Paginator(xrange(500), 10)
