@@ -162,7 +162,7 @@ class CollectionMixin(object):
             collection = 'all'
 
         return queryset.filter(
-            collection=self.user_collections.get(name__iexact=collection)
+            collection=self.user_collections.filter(name__iexact=collection)
         )
 
 
