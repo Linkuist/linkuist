@@ -4,7 +4,7 @@
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 
 import redis
 
@@ -56,7 +56,7 @@ class RssCollectorTestCase(TestCase):
         self.assertEqual(job_len, expected_jobs_len)
 
 
-class CollectorViewTest(TransactionTestCase):
+class CollectorViewTest(TestCase):
 
     def setUp(self):
         self.user = source_factories.UserFactory()

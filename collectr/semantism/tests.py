@@ -5,7 +5,7 @@
 
 # django
 from django.utils import unittest, timezone
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 # project
 import requests_mock
@@ -42,7 +42,7 @@ class LinkTestCase(unittest.TestCase):
         self.assertEqual(ret, "tutu=coin&tutu=pouet&toto")
 
 
-class LinkExtractorTestCase(TransactionTestCase):
+class LinkExtractorTestCase(TestCase):
 
     def test_extract_html(self):
         url = 'http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html'
@@ -86,7 +86,7 @@ class LinkExtractorTestCase(TransactionTestCase):
             self.assertEqual(l.url, cleaned_url)
 
 
-class IndexUrlTestCase(TransactionTestCase):
+class IndexUrlTestCase(TestCase):
 
     def setUp(self):
         self.url = "http://www.lemonde.fr/sciences/article/2012/09/10/arianespace-dix-lancements-en-2012-davantage-prevus-l-an-prochain_1758191_1650684.html"

@@ -2,16 +2,16 @@
     Test for our webfront app
 """
 
+from django.test import TestCase
+
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django import test
-
 
 from source import factories as source_factories
 from webfront import views as webfront_views
 
 
-class WebfrontTestCase(test.TransactionTestCase):
+class WebfrontTestCase(TestCase):
 
     def setUp(self):
         user = source_factories.UserFactory()
@@ -56,7 +56,7 @@ class WebfrontTestCase(test.TransactionTestCase):
 
 
 
-class WebfrontPaginationTestCase(test.TestCase):
+class WebfrontPaginationTestCase(TestCase):
 
     def test_pagination_start(self):
         paginator = Paginator(xrange(500), 10)

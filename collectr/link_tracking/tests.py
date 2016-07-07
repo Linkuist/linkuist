@@ -3,12 +3,12 @@
 """
 
 from django.core.urlresolvers import reverse
-from django.test import TransactionTestCase
+from django.test import TestCase
 
 from source import factories as source_factories
 
 
-class LinkTrackingTestCase(TransactionTestCase):
+class LinkTrackingTestCase(TestCase):
 
     def setUp(self):
         self.user = source_factories.UserFactory()
