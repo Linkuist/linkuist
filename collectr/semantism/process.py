@@ -31,8 +31,6 @@ from .link import LinkExtractor
 logger = logging.getLogger('index_url')
 logger.setLevel(logging.DEBUG)
 
-default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
-
 
 def find_urls(content):
     if isinstance(content, basestring):
@@ -110,6 +108,8 @@ def index_url(link, user_id, link_at, author_name, source_name):
     """Entry point to store our link & linksum into the database"""
     if not isinstance(user_id, (list, tuple)):
         user_id = [int(user_id)]
+
+    default_collection = Collection.objects.get(name__iexact="all", user__isnull=True)
 
     urls = find_urls(link)
     if not urls:

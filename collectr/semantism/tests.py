@@ -105,6 +105,7 @@ class IndexUrlTestCase(TestCase):
         super(IndexUrlTestCase, self).tearDown()
 
     def test_link_index(self):
+        source_factories.CollectionFactory(name="all", user=None)
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
 
@@ -113,6 +114,7 @@ class IndexUrlTestCase(TestCase):
 
     def test_link_from_two(self):
         another_user = source_factories.UserFactory()
+        source_factories.CollectionFactory(name="all", user=None)
         index_url(self.url, self.user.id, timezone.now(), self.author.name, self.source.name)
         index_url(self.url, another_user.id, timezone.now(), self.author.name, self.source.name)
 
@@ -120,6 +122,7 @@ class IndexUrlTestCase(TestCase):
         self.assertEqual(source_models.LinkSum.objects.filter(url__link=self.url).count(), 2)
 
     def test_move_to_collection(self):
+        source_factories.CollectionFactory(name="all", user=None)
         url = 'http://www.freenews.fr/spip.php?article12674'
         self.mock.get(url, text='', headers={'Content-Type': 'text/html'})
         mfilter = source_factories.FilterFactory(regexp='.*freenews\.fr.*', field='link')
