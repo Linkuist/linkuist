@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 client_secret=settings.REDDIT_API_SECRET,
                 redirect_uri='http://linkuist.com/complete/reddit/')
 
-        self.q = Queue('link_indexing', connection=Redis('127.0.0.1', port=6379))
+        self.q = Queue('link_indexing', connection=Redis(**settings.RQ_DATABASE))
 
 
     def fetch_user_subreddit(self, user):
