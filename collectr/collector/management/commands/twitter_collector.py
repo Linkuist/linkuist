@@ -20,7 +20,7 @@ from rq import Queue
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from social_auth.models import UserSocialAuth
+from social.apps.django_app.default.models import UserSocialAuth
 
 # project
 from semantism.process import index_url
@@ -38,8 +38,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         user_list = args
         if not user_list:
-            user_list = UserSocialAuth.objects.values_list('user__username',
-                    flat=True).filter(provider='twitter')
+            user_list = UserSocialAuth.objects \
+                .filter(provider='twitter') \
+                .values_list('user__username', flat=True)
         logger.info("Running Twitter URL collector for %s",
                     ", ".join(user_list))
 

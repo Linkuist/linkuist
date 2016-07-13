@@ -157,7 +157,10 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
 
 SOCIAL_AUTH_REDDIT_KEY = ''
 SOCIAL_AUTH_REDDIT_SECRET = ''
-# SOCIAL_AUTH_REDDIT_AUTH_EXTRA_ARGUMENTS = {'duration': 'permanent'}
+SOCIAL_AUTH_REDDIT_AUTH_EXTRA_ARGUMENTS = {
+    'duration': 'permanent',
+    'scope': ','.join(['identity', 'mysubreddits']),
+}
 
 SOCIAL_AUTH_TWITTER_KEY = ''
 SOCIAL_AUTH_TWITTER_SECRET = ''
