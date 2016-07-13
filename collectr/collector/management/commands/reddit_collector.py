@@ -3,22 +3,24 @@
 """
 
 import datetime
-import praw
+import logging
 import sys
 import urlparse
 
-from redis import Redis
-from rq import use_connection, Queue
-
-from django.core.management.base import BaseCommand, CommandError
-
-from django.contrib.auth import models as auth_models
 from django.conf import settings
+from django.contrib.auth import models as auth_models
+from django.core.management.base import BaseCommand, CommandError
+from django.core.urlresolvers import reverse
+
+import praw
+from redis import Redis
+from rq import Queue, use_connection
+from social.apps.django_app.utils import load_strategy
 
 from semantism.process import index_url
 from source import models as source_models
 
-
+logger = logging.getLogger('collector.reddit')
 
 
 class Command(BaseCommand):
@@ -27,30 +29,38 @@ class Command(BaseCommand):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.reddit = praw.Reddit('Linkuist reddit sumarizer',
-                disable_update_check=True)
-        self.reddit.set_oauth_app_info(client_id=settings.REDDIT_APP_ID,
-                client_secret=settings.REDDIT_API_SECRET,
-                redirect_uri='http://linkuist.com/complete/reddit/')
+        self.reddit = praw.Reddit(
+                'Linkuist reddit sumarizer',
+                disable_update_check=True
+        )
+        self.reddit.set_oauth_app_info(
+            settings.SOCIAL_AUTH_REDDIT_KEY,
+            settings.SOCIAL_AUTH_REDDIT_SECRET,
+            reverse('social:complete', args=('reddit',))
+        )
 
         self.q = Queue('link_indexing', connection=Redis(**settings.RQ_DATABASE))
 
 
     def fetch_user_subreddit(self, user):
-        auth_extra = user.social_auth.get(provider='reddit')
+        strategy = load_strategy()
+        auth_social = user.social_auth.get(provider='reddit')
 
-        # first, set the creds
-        self.reddit.set_access_credentials(scope=set(['identity', 'mysubreddits']),
-                access_token=auth_extra.extra_data['access_token'],
-                refresh_token=auth_extra.extra_data['refresh_token'])
+        logger.debug('Refreshing token for %s', user.username)
+        auth_social.refresh_token(
+            strategy=strategy,
+            redirect_uri=reverse('social:complete', args=('reddit',))
+        )
 
-        # refresh our auth tokens
-        refreshed_auth = self.reddit.refresh_access_information()
-        auth_extra.extra_data['access_token'] = refreshed_auth['access_token']
-        auth_extra.extra_data['refresh_token'] = refreshed_auth['refresh_token']
-        auth_extra.save()
+        logger.debug('Setting credentials for %s', user.username)
+        self.reddit.set_access_credentials(
+            set(['identity', 'mysubreddits']),
+            auth_social.access_token,
+        )
 
+        logger.info('Fetching subreddit for user %s', user.username)
         for subreddit in self.reddit.get_my_subreddits():
+            print('Working on', subreddit)
             last = None
             instance, created = source_models.Reddit.objects.get_or_create(subreddit=subreddit.display_name)
             instance.users.add(user)
@@ -71,8 +81,6 @@ class Command(BaseCommand):
             instance.uid = last
             instance.save()
 
-
-
     def fetch_mapping(self, user_qs):
         """Build a dict of subreddit and list of users"""
         mapping = {}
@@ -81,5 +89,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         users = auth_models.User.objects.filter(social_auth__provider='reddit')
+        self.stdout.write('Processing %d users' % len(users))
 
         user_subreddit_mapping = self.fetch_mapping(users)
