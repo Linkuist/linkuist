@@ -51,6 +51,8 @@ class Command(BaseCommand):
             strategy=strategy,
             redirect_uri=reverse('social:complete', args=('reddit',))
         )
+        import json
+        auth_social.extra_data = json.loads(auth_social.extra_data)
 
         logger.debug('Setting credentials for %s', user.username)
         self.reddit.set_access_credentials(
