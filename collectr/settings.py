@@ -72,6 +72,7 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     # Project apps
     'collectr.collector',
+    'collectr.ingest',
     'collectr.source',
     'collectr.userprofile',
     'collectr.link_tracking',
