@@ -8,7 +8,6 @@ import os
 PROJECT_PATH = os.path.dirname(__file__)
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -48,11 +47,6 @@ STATICFILES_FINDERS = (
 
 SECRET_KEY = ''
 
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
-
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,10 +56,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'collectr.urls'
-
-TEMPLATE_DIRS = (
-    os.path.join(PROJECT_PATH, "templates"),
-)
 
 INSTALLED_APPS = (
     # Django apps
@@ -99,17 +89,27 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-   "django.contrib.auth.context_processors.auth",
-   "django.core.context_processors.request",
-   "django.core.context_processors.debug",
-   "django.core.context_processors.i18n",
-   "django.core.context_processors.media",
-   "django.core.context_processors.static",
-   "django.contrib.messages.context_processors.messages",
-    "social.apps.django_app.context_processors.backends",
-    "social.apps.django_app.context_processors.login_redirect",
-)
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [
+        os.path.join(PROJECT_PATH, "templates"),
+    ],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'debug': DEBUG,
+        'context_processors': (
+            "django.contrib.auth.context_processors.auth",
+            "django.core.context_processors.request",
+            "django.core.context_processors.debug",
+            "django.core.context_processors.i18n",
+            "django.core.context_processors.media",
+            "django.core.context_processors.static",
+            "django.contrib.messages.context_processors.messages",
+            "social.apps.django_app.context_processors.backends",
+            "social.apps.django_app.context_processors.login_redirect",
+        ),
+    },
+}]
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/app/#/links'
