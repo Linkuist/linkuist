@@ -1,0 +1,4 @@
+{% for link in object_list %}
+{{ link.url }}
+Shared by {{ link.metadata.sharer.name }} on {{ link.metadata.sharer.media.name }} at {{ link.metadata.received_at }}
+{% endfor %}
