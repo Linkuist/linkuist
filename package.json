@@ -1,0 +1,10 @@
+{
+    "name": "linkuist",
+    "description": "Centralize your links from all your networks",
+    "author": "Benoît Calvez",
+    "license": "GPL v3",
+    "dependencies": {
+        "bootstrap": "3.3.6",
+        "jquery": "1.9.1 - 2"
+    }
+}

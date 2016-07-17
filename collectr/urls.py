@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.conf.urls import include, url
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -21,3 +23,6 @@ urlpatterns = [
     url(r'^profile/', include('collectr.userprofile.urls', namespace='userprofile')),
     url(r'^api/', include('collectr.webapi.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()

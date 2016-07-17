@@ -4,6 +4,7 @@ certifi >=0.0.8
 chardet >=1.0.1, <2
 python-social-auth >=0.2.19
 django-extensions >=0.9
+django-npm >= 1.0.0
 lxml >=2.3.4
 nltk >=2.0.1
 oauth2 >=1.5.211
